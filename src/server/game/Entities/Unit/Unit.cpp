@@ -16423,7 +16423,7 @@ bool Unit::CheckPlayerCondition(Player* pPlayer)
 
 void Unit::EnterVehicle(Vehicle *vehicle, int8 seatId, AuraApplication const * aurApp)
 {
-    if (!isAlive() || GetVehicleKit() == vehicle)
+    if (!isAlive() || GetVehicleKit() == vehicle || vehicle->GetBase()->IsOnVehicle(this))
         return;
 
     if (m_vehicle)
@@ -16534,13 +16534,6 @@ void Unit::ExitVehicle()
     m_vehicle = NULL;
 
     SetControlled(false, UNIT_STAT_ROOT);
-
-    RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_ROOT);
-    m_movementInfo.t_pos.Relocate(0, 0, 0, 0);
-    m_movementInfo.t_time = 0;
-    m_movementInfo.t_seat = 0;
-
-    Relocate(vehicle->GetBase());
 
     //Send leave vehicle, not correct
     if (GetTypeId() == TYPEID_PLAYER)
