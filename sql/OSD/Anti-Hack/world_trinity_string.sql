@@ -1,0 +1,1 @@
+REPLACE INTO `trinity_string` VALUES ('12000', 'Cheater DETECTED> %s  ID:( %u ) Reason> %s', null, null, null, null, null, null, null, '×ÈÒÅÐ îáíàðóæåí:> %s ID:( %u) Ïðè÷èíà> %s');
