@@ -64,7 +64,7 @@
 
 bool ChatHandler::HandleMaxSkillCommand(const char* /*args*/)
 {
-	Player* SelectedPlayer = getSelectedPlayer();
+    Player* SelectedPlayer = getSelectedPlayer();
     if (!SelectedPlayer)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -2924,9 +2924,7 @@ bool ChatHandler::HandleBanIPCommand(const char *args)
 
 bool ChatHandler::HandleBanHelper(BanMode mode, const char *args)
 {
-    std::string announce;
-	
-	if (!*args)
+    if (!*args)
         return false;
 
     char* cnameOrIP = strtok ((char*)args, " ");
@@ -3009,7 +3007,7 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char *args)
     announce += reason;
     HandleAnnounceCommand(announce.c_str());
 
-     return true;
+    return true;
 }
 
 bool ChatHandler::HandleUnBanAccountCommand(const char *args)

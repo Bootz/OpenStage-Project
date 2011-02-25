@@ -110,7 +110,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
     announce += mutereason;
     HandleAnnounceCommand(announce.c_str());
 
-     return true;
+    return true;
 }
 
 //unmute player
@@ -225,11 +225,10 @@ bool ChatHandler::HandleDeMorphCommand(const char* /*args*/)
 //kick player
 bool ChatHandler::HandleKickPlayerCommand(const char *args)
 {
-    std::string announce;	
     Player* target = NULL;
     std::string playerName;
     if (!extractPlayerTarget((char*)args, &target, NULL, &playerName))
-    return false;
+        return false;
 
     if (m_session && target == m_session->GetPlayer())
     {
@@ -256,7 +255,7 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
     announce += "'.";
     HandleAnnounceCommand(announce.c_str());
 
-     return true;
+    return true;
 }
 
 //show info of player

@@ -1,7 +1,8 @@
 From ffaa0d555c5610d4917d2df1e801ae6a986478a7 Mon Sep 17 00:00:00 2001
 From: Bootz <Stage6Dev@gmail.com>
 Date: Thu, 24 Feb 2011 18:43:23 -0600
-Subject: [PATCH] CORE/ANTI-HACK implementation of anticheat check forums on working with this project
+Subject: [PATCH] CORE/ANTI-HACK implementation of anticheat 
+-- check forums on working with this project
 
 ---
  sql/OSD/Anti-Hack/characters_cheaters.sql          |   19 ++
