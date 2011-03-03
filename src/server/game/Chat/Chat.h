@@ -365,7 +365,7 @@ class ChatHandler
         bool HandleWintergraspEnableCommand(const char *args);
         bool HandleWintergraspSwitchTeamCommand(const char *args);
         bool HandleWintergraspTimerCommand(const char *args);
-
+		
         // Stores informations about a deleted character
         struct DeletedInfo
         {

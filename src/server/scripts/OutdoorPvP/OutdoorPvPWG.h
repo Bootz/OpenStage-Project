@@ -29,7 +29,7 @@
 #define POS_X_CENTER             5100
 #define MAX_VEHICLE_PER_WORKSHOP    4
 
-const uint32 WintergraspFaction[3] = {1732, 1735, 35}
+const uint32 WintergraspFaction[3] = {1802, 1801, 35};
 const uint32 WG_MARK_OF_HONOR = 43589;
 const uint32 VehNumWorldState[2] = {3680,3490};
 const uint32 MaxVehNumWorldState[2] = {3681,3491};
@@ -99,7 +99,10 @@ enum OutdoorPvP_WG_KeepStatus
 
 enum OutdoorPVPWGStatus
 {
-    WORLDSTATE_WINTERGRASP_CONTROLING_FACTION,
+    WORLDSTATE_WINTERGRASP_WARTIME            = 31001,
+    WORLDSTATE_WINTERGRASP_TIMER              = 31002,
+    WORLDSTATE_WINTERGRASP_DEFENDERS          = 31003,
+    WORLDSTATE_WINTERGRASP_CONTROLING_FACTION = 31004,
     WORLDSTATE_VALUE_COUNT,
 };
 
@@ -173,13 +176,13 @@ struct BuildingState
 {
     explicit BuildingState(uint32 _worldState, TeamId _team, bool asDefault)
          : worldState(_worldState), health(0)
-         , defaultTeam(asDefault ? _team : OTHER_TEAM(_team)), team(_team), damageState(DAMAGE_INTACT)
-         , building(NULL), type(BUILDING_WALL), graveTeam(NULL)
-    { }
+         , defaultTeam(asDefault ? _team : OTHER_TEAM(_team)), damageState(DAMAGE_INTACT), team(_team)
+         , building(NULL), graveTeam(NULL), type(BUILDING_WALL) {}
     uint32 worldState;
     uint32 health;
     TeamId defaultTeam;
     OutdoorPvPWGDamageState damageState;
+    TeamId team;
     GameObject *building;
     uint32 *graveTeam;
     OutdoorPvPWGBuildingType type;
@@ -202,9 +205,6 @@ struct BuildingState
             if (uint32 newTeam = TeamId2Team[t])
                 *graveTeam = newTeam;
     }
-
-    private:
-        TeamId team;
 };
 
 typedef std::map<uint32, uint32> TeamPairMap;
@@ -237,7 +237,6 @@ class OutdoorPvPWG : public OutdoorPvP
         bool Update(uint32 diff);
         void BroadcastStateChange(BuildingState *state) const;
         uint32 GetData(uint32 id);
-        void SetData(uint32 id, uint32 value) { };
         void ModifyWorkshopCount(TeamId team, bool add);
         uint32 GetTimer() const { return m_timer / 1000; };
         bool isWarTime() const { return m_wartime; };
@@ -249,7 +248,7 @@ class OutdoorPvPWG : public OutdoorPvP
         void forceChangeTeam();
         void forceStopBattle();
         void forceStartBattle();
-        // wg bg system
+        // Temporal BG specific till 3.2
         void SendAreaSpiritHealerQueryOpcode(Player *pl, const uint64& guid);
         void AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid);
         void RemovePlayerFromResurrectQueue(uint64 player_guid);
@@ -258,8 +257,8 @@ class OutdoorPvPWG : public OutdoorPvP
         // BG end
         void SendInitWorldStatesTo(Player *player = NULL) const;
         uint32 m_timer;
-       bool m_changeAlly;
-       bool m_changeHorde;
+        bool m_changeAlly;
+        bool m_changeHorde;
 
     protected:
         // Temporal BG specific till 3.2
@@ -304,7 +303,6 @@ class OutdoorPvPWG : public OutdoorPvP
         void UpdateClockDigit(uint32 &timer, uint32 digit, uint32 mod);
         void PromotePlayer(Player *player) const;
         void UpdateTenacityStack();
-        void UpdateCreatureObject();
         void UpdateAllWorldObject();
         bool UpdateCreatureInfo(Creature *creature);
         bool UpdateGameObjectInfo(GameObject *go) const;

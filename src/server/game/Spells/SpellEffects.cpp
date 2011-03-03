@@ -48,6 +48,7 @@
 #include "BattlegroundEY.h"
 #include "BattlegroundWS.h"
 #include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 #include "Language.h"
 #include "SocialMgr.h"
 #include "Util.h"
@@ -61,7 +62,6 @@
 #include "Vehicle.h"
 #include "ScriptMgr.h"
 #include "GameObjectAI.h"
-#include "OutdoorPvPWG.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -3130,7 +3130,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
         {
             float x, y, z;
             m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE);
-            summon = m_caster->GetMap()->SummonCreature(entry, pos, properties, duration, m_caster);
+            summon = m_originalCaster->GetMap()->SummonCreature(entry, pos, properties, duration, m_caster);
             if (!summon || !summon->IsVehicle())
                 return;
 
@@ -3138,10 +3138,21 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
             {
                 SpellEntry const *spellProto = sSpellStore.LookupEntry(SpellMgr::CalculateSpellEffectAmount(m_spellInfo, effIndex));
                 if (spellProto)
-                    m_caster->CastSpell(summon, spellProto, true);
+                {
+                    m_originalCaster->CastSpell(summon, spellProto, true);
+                    return;
+                }
             }
 
-            m_caster->EnterVehicle(summon->GetVehicleKit());
+            // Hard coded enter vehicle spell
+            m_originalCaster->CastSpell(summon, 46598, true);
+
+            summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
+            uint32 faction = properties->Faction;
+            if (!faction)
+                faction = m_originalCaster->getFaction();
+
+            summon->setFaction(faction);
             break;
         }
     }
@@ -4389,7 +4400,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_ALLIENCE_CAMP, true);
                         }
                 return;
-                   }
+                   }                
                 // Glyph of Backstab
                 case 63975:
                 {
@@ -7055,8 +7066,8 @@ void Spell::EffectPlayerNotification(SpellEffIndex /*effIndex*/)
 {
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
-
-    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+    
+	OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
 
     switch(m_spellInfo->Id)
     {
@@ -7070,7 +7081,7 @@ void Spell::EffectPlayerNotification(SpellEffIndex /*effIndex*/)
                    unitTarget->MonsterTextEmote("The air is too thin in Wintergrasp for normal flight. You will be ejected in 9 sec.",unitTarget->GetGUID(),true);
                 } else unitTarget->RemoveAura(58730);
               }
-            break;
+            break;        
         case 58600: // Restricted Flight Area
             unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
             break;

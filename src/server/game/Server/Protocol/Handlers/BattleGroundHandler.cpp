@@ -605,14 +605,14 @@ void WorldSession::HandleAreaSpiritHealerQueryOpcode(WorldPacket & recv_data)
         sBattlegroundMgr->SendAreaSpiritHealerQueryOpcode(_player, bg, guid);
     }
 	else
-    {  // Wintergrasp Hack till 3.2 and it's implemented as BG
+    {  // Wintergrasp Hack and it's implemented as BG
         if (GetPlayer()->GetZoneId() == 4197)
         {
             OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
             if (pvpWG && pvpWG->isWarTime())
                 pvpWG->SendAreaSpiritHealerQueryOpcode(_player, guid);
         }
-    }
+    }		
 }
 
 

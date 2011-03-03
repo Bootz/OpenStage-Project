@@ -1,6 +1,5 @@
-/* Copyright (C) 2008 - 2009 Trinity <http://www.trinitycore.org/>
-*
- * Patch supported by ChaosUA & TCRU community http://trinity-core.ru/
+/*
+ * Copyright (C) 2008 - 2011 Trinity <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +29,6 @@ class npc_demolisher_engineerer : public CreatureScript
 {
 public:
     npc_demolisher_engineerer() : CreatureScript("npc_demolisher_engineerer") { }
-
 
 bool OnGossipHello(Player* pPlayer, Creature* pCreature)
 {
@@ -409,9 +407,30 @@ public:
     };
 };
 
+class go_wg_veh_teleporter : public GameObjectScript
+{
+public:
+    go_wg_veh_teleporter() : GameObjectScript("go_wg_veh_teleporter") { }
+
+    bool OnGossipHello(Player *pPlayer, GameObject * pGO)
+    {
+        if (GameObject* trigger = pGO->FindNearestGameObject(190375, 500)) // Wintergrasp Fortress Gate
+            if (Vehicle * veh = pPlayer->GetVehicle())
+            {
+                Position triggerPos;
+                trigger->GetPosition(&triggerPos);
+                triggerPos.m_positionX -= 30;
+                veh->Relocate(triggerPos);
+            }
+        
+        return true;
+    }
+};
+
 void AddSC_wintergrasp()
 {
     new npc_demolisher_engineerer();
     new npc_wg_ally_battle_mage();
     new npc_wg_horde_battle_mage();
+    new go_wg_veh_teleporter();
 }

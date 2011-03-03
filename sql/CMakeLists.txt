@@ -13,8 +13,7 @@ if( WITH_SQL )
     DIRECTORY
       updates
       scripts
-      OSD
-	  base
+      base
       create
     DESTINATION
       shared/trinity/sql
