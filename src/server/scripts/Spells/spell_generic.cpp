@@ -511,7 +511,7 @@ class spell_pvp_trinket_wotf_shared_cd : public SpellScriptLoader
                     return;
                 SpellEntry const* spellInfo = GetSpellInfo();
 
-                caster->AddSpellCooldown(spellInfo->Id, NULL, time(NULL) + GetSpellRecoveryTime(sSpellStore.LookupEntry(SPELL_WILL_OF_THE_FORSAKEN_COOLDOWN_TRIGGER)) / IN_MILLISECONDS);
+                caster->AddSpellCooldown(spellInfo->Id, 0, time(NULL) + GetSpellRecoveryTime(sSpellStore.LookupEntry(SPELL_WILL_OF_THE_FORSAKEN_COOLDOWN_TRIGGER)) / IN_MILLISECONDS);
                 WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4);
                 data << uint64(caster->GetGUID());
                 data << uint8(0);
@@ -711,7 +711,7 @@ class spell_gen_parachute_ic : public SpellScriptLoader
                     return;
 
                 if (target->ToPlayer()->m_movementInfo.fallTime > 2000)
-                    target->CastSpell(target,SPELL_PARACHUTE_IC,true);
+                    target->CastSpell(target, SPELL_PARACHUTE_IC, true);
             }
 
             void Register()
@@ -799,6 +799,268 @@ class spell_gen_profession_research : public SpellScriptLoader
         }
 };
 
+class spell_generic_clone : public SpellScriptLoader
+{
+    public:
+        spell_generic_clone() : SpellScriptLoader("spell_generic_clone") { }
+
+        class spell_generic_clone_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_generic_clone_SpellScript);
+
+            void HandleScriptEffect(SpellEffIndex effIndex)
+            {
+                PreventHitDefaultEffect(effIndex);
+                Unit* caster = GetCaster();
+                uint32 spellId = uint32(SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), effIndex));
+
+                if (Unit* target = GetHitUnit())
+                    target->CastSpell(caster, spellId, true);
+            }
+
+            void Register()
+            {
+                OnEffect += SpellEffectFn(spell_generic_clone_SpellScript::HandleScriptEffect, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+                OnEffect += SpellEffectFn(spell_generic_clone_SpellScript::HandleScriptEffect, EFFECT_2, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_generic_clone_SpellScript();
+        }
+};
+
+enum CloneWeaponSpells
+{
+    SPELL_COPY_WEAPON       = 41055,
+    SPELL_COPY_WEAPON_2     = 63416,
+    SPELL_COPY_WEAPON_3     = 69891,
+
+    SPELL_COPY_OFFHAND      = 45206,
+    SPELL_COPY_OFFHAND_2    = 69892,
+
+    SPELL_COPY_RANGED       = 57593
+};
+
+class spell_generic_clone_weapon : public SpellScriptLoader
+{
+    public:
+        spell_generic_clone_weapon() : SpellScriptLoader("spell_generic_clone_weapon") { }
+
+        class spell_generic_clone_weapon_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_generic_clone_weapon_SpellScript);
+            bool Validate(SpellEntry const* /*spellEntry*/)
+            {
+                if (!sSpellStore.LookupEntry(SPELL_COPY_WEAPON))
+                    return false;
+                if (!sSpellStore.LookupEntry(SPELL_COPY_WEAPON_2))
+                    return false;
+                if (!sSpellStore.LookupEntry(SPELL_COPY_WEAPON_3))
+                    return false;
+                if (!sSpellStore.LookupEntry(SPELL_COPY_OFFHAND))
+                    return false;
+                if (!sSpellStore.LookupEntry(SPELL_COPY_OFFHAND_2))
+                    return false;
+                if (!sSpellStore.LookupEntry(SPELL_COPY_RANGED))
+                    return false;
+                return true;
+            }
+
+            void HandleScriptEffect(SpellEffIndex effIndex)
+            {
+                PreventHitDefaultEffect(effIndex);
+                Unit* caster = GetCaster();
+                Unit* target = GetHitUnit();
+
+                if (!target)
+                    return;
+
+                uint32 spellId = uint32(SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), EFFECT_0));
+                target->CastSpell(caster, spellId, true);
+
+                if (target->GetTypeId() == TYPEID_PLAYER)
+                    return;
+
+                switch (GetSpellInfo()->Id)
+                {
+                    case SPELL_COPY_WEAPON:
+                    case SPELL_COPY_WEAPON_2:
+                    case SPELL_COPY_WEAPON_3:
+                    {
+                        if (Player* plrCaster = caster->ToPlayer())
+                        {
+                            if (Item* mainItem = plrCaster->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+                                target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, mainItem->GetEntry());
+                        }
+                        else
+                            target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID));
+                        break;
+                    }
+                    case SPELL_COPY_OFFHAND:
+                    case SPELL_COPY_OFFHAND_2:
+                    {
+                        if (Player* plrCaster = caster->ToPlayer())
+                        {
+                            if (Item* offItem = plrCaster->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                                target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, offItem->GetEntry());
+                        }
+                        else
+                            target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1));
+                        break;
+                    }
+                    case SPELL_COPY_RANGED:
+                    {
+                        if (Player* plrCaster = caster->ToPlayer())
+                        {
+                            if (Item* rangedItem = plrCaster->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
+                                target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, rangedItem->GetEntry());
+                        }
+                        else
+                            target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2));
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+
+            void Register()
+            {
+                OnEffect += SpellEffectFn(spell_generic_clone_weapon_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_generic_clone_weapon_SpellScript();
+        }
+};
+
+enum SeaforiumSpells
+{
+    SPELL_PLANT_CHARGES_CREDIT_ACHIEVEMENT = 60937,
+};
+
+class spell_gen_seaforium_blast : public SpellScriptLoader
+{
+    public:
+        spell_gen_seaforium_blast() : SpellScriptLoader("spell_gen_seaforium_blast") {}
+
+        class spell_gen_seaforium_blast_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_seaforium_blast_SpellScript);
+
+            bool Validate(SpellEntry const* /*spell*/)
+            {
+                if (!sSpellStore.LookupEntry(SPELL_PLANT_CHARGES_CREDIT_ACHIEVEMENT))
+                    return false;
+                return true;
+            }
+
+            bool Load()
+            {
+                // OriginalCaster is always available in Spell::prepare
+                return GetOriginalCaster()->GetTypeId() == TYPEID_PLAYER;
+            }
+
+            void AchievementCredit(SpellEffIndex /*effIndex*/)
+            {
+                // but in effect handling OriginalCaster can become NULL
+                if (!GetOriginalCaster() || !GetHitGObj() || GetHitGObj()->GetGOInfo()->type != GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
+                    return;
+
+                GetOriginalCaster()->CastSpell(GetOriginalCaster(), SPELL_PLANT_CHARGES_CREDIT_ACHIEVEMENT, true);
+            }
+
+            void Register()
+            {
+                OnEffect += SpellEffectFn(spell_gen_seaforium_blast_SpellScript::AchievementCredit, EFFECT_1, SPELL_EFFECT_WMO_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_seaforium_blast_SpellScript();
+        }
+};
+
+enum FriendOrFowl
+{
+    SPELL_TURKEY_VENGEANCE  = 25285,
+};
+
+class spell_gen_turkey_marker : public SpellScriptLoader
+{
+    public:
+        spell_gen_turkey_marker() : SpellScriptLoader("spell_gen_turkey_marker") { }
+
+        class spell_gen_turkey_marker_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_turkey_marker_AuraScript);
+
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                // store stack apply times, so we can pop them while they expire
+                _applyTimes.push_back(getMSTime());
+
+                // on stack 15 cast the achievement crediting spell
+                if (GetStackAmount() >= 15)
+                    GetTarget()->CastSpell(GetTarget(), SPELL_TURKEY_VENGEANCE, true, NULL, aurEff, GetCasterGUID());
+            }
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_STACK)
+                    return;
+
+                // find our new aura which replaces this one aura is inserted to m_ownedAuras before old removal takes place
+                Aura* newAura = GetTarget()->GetOwnedAura(GetId(), 0, 0, 0, GetAura());
+                // this should never happen
+                if (!newAura)
+                    return;
+
+                std::list<AuraScript*> const& loadedScripts = newAura->m_loadedScripts;
+
+                // find the new aura's script and give it our stored stack apply times
+                for (std::list<AuraScript*>::const_iterator itr = loadedScripts.begin(); itr != loadedScripts.end(); ++itr)
+                {
+                    if (spell_gen_turkey_marker_AuraScript* scr = dynamic_cast<spell_gen_turkey_marker_AuraScript*>(*itr))
+                    {
+                        scr->_applyTimes.splice(scr->_applyTimes.begin(), _applyTimes);
+                        break;
+                    }
+                }
+            }
+
+            void OnPeriodic(AuraEffect const* /*aurEff*/)
+            {
+                if (_applyTimes.empty())
+                    return;
+
+                // pop stack if it expired for us
+                if (_applyTimes.front() + GetMaxDuration() < getMSTime())
+                    if (ModStackAmount(-1))
+                        GetTarget()->RemoveOwnedAura(GetAura(), AURA_REMOVE_BY_EXPIRE);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_gen_turkey_marker_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_gen_turkey_marker_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_gen_turkey_marker_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+
+            std::list<uint32> _applyTimes;
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_turkey_marker_AuraScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -819,4 +1081,8 @@ void AddSC_generic_spell_scripts()
     new spell_gen_gunship_portal();
     new spell_gen_dungeon_credit();
     new spell_gen_profession_research();
+    new spell_generic_clone();
+    new spell_generic_clone_weapon();
+    new spell_gen_seaforium_blast();
+    new spell_gen_turkey_marker();
 }

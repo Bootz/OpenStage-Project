@@ -15,7 +15,10 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptPCH.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
 #include "ulduar.h"
 
 enum eYells
@@ -41,6 +44,7 @@ enum eSpells
 {
     SPELL_AURA_OF_DESPAIR                        = 62692,
     SPELL_MARK_OF_THE_FACELESS                   = 63276,
+    SPELL_MARK_OF_THE_FACELESS_DAMAGE            = 63278,
     SPELL_SARONITE_BARRIER                       = 63364,
     SPELL_SEARING_FLAMES                         = 62661,
     SPELL_SHADOW_CRASH                           = 62660,
@@ -158,7 +162,7 @@ public:
                             However, if there are not at least 9 people outside of 15 yards
                             he will start casting it on players inside 15 yards melee and tank included.
                         */
-                        Unit* target = CheckPlayersInRange(RAID_MODE<uint32>(4,9), 15.0f, 50.f);
+                        Unit* target = CheckPlayersInRange(RAID_MODE<uint32>(4, 9), 15.0f, 50.f);
                         if (!target)
                             target = SelectTarget(SELECT_TARGET_RANDOM);
                         DoCast(target, SPELL_MARK_OF_THE_FACELESS);
@@ -408,9 +412,44 @@ public:
     };
 };
 
+class spell_mark_of_the_faceless : public SpellScriptLoader
+{
+    public:
+        spell_mark_of_the_faceless() : SpellScriptLoader("spell_mark_of_the_faceless") { }
+
+        class spell_mark_of_the_faceless_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mark_of_the_faceless_AuraScript);
+
+            void HandleEffectPeriodic(AuraEffect const* aurEff)
+            {
+                Unit* target = GetTarget();
+                Unit* caster = GetCaster();
+
+                if (!caster || !target)
+                    return;
+
+                // Casted by CastCustomSpell() because when it's cast by CastSpell(), damage is 1
+                int32 damage = int32(aurEff->GetBase()->GetEffect(EFFECT_0)->GetAmount());
+                caster->CastCustomSpell(SPELL_MARK_OF_THE_FACELESS_DAMAGE, SPELLVALUE_BASE_POINT1, damage, target, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_mark_of_the_faceless_AuraScript::HandleEffectPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mark_of_the_faceless_AuraScript();
+        }
+};
+
 void AddSC_boss_general_vezax()
 {
     new boss_general_vezax();
     new boss_saronite_animus();
     new npc_saronite_vapors();
+    new spell_mark_of_the_faceless();
 }

@@ -111,8 +111,8 @@ bool SummonList::HasEntry(uint32 entry)
 ScriptedAI::ScriptedAI(Creature* pCreature) : CreatureAI(pCreature),
     me(pCreature),
     IsFleeing(false),
-    _isCombatMovementAllowed(true),
-    _evadeCheckCooldown(2500)
+    _evadeCheckCooldown(2500),
+    _isCombatMovementAllowed(true)
 {
     _isHeroic = me->GetMap()->IsHeroic();
     _difficulty = Difficulty(me->GetMap()->GetSpawnMode());
@@ -421,7 +421,7 @@ void ScriptedAI::SetEquipmentSlots(bool loadDefault, int32 mainHand /*= EQUIP_NO
 {
     if (loadDefault)
     {
-        if (CreatureInfo const* creatureInfo = ObjectMgr::GetCreatureTemplate(me->GetEntry()))
+        if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(me->GetEntry()))
             me->LoadEquipment(creatureInfo->equipmentId, true);
 
         return;
@@ -505,9 +505,11 @@ void Scripted_NoMovementAI::AttackStart(Unit* target)
         DoStartNoMovement(target);
 }
 
-BossAI::BossAI(Creature* creature, uint32 bossId) : ScriptedAI(creature)
-, _bossId(bossId), summons(creature), instance(creature->GetInstanceScript())
-, _boundary(instance ? instance->GetBossBoundary(bossId) : NULL)
+BossAI::BossAI(Creature* creature, uint32 bossId) : ScriptedAI(creature),
+    instance(creature->GetInstanceScript()),
+    summons(creature),
+    _boundary(instance ? instance->GetBossBoundary(bossId) : NULL),
+    _bossId(bossId)
 {
 }
 

@@ -421,7 +421,7 @@ enum SpellAttr4
     SPELL_ATTR4_UNK11                            = 0x00000800, // 11
     SPELL_ATTR4_UNK12                            = 0x00001000, // 12
     SPELL_ATTR4_UNK13                            = 0x00002000, // 13
-    SPELL_ATTR4_UNK14                            = 0x00004000, // 14
+    SPELL_ATTR4_DAMAGE_DOESNT_BREAK_AURAS        = 0x00004000, // 14 doesn't break auras by damage from these spells
     SPELL_ATTR4_UNK15                            = 0x00008000, // 15
     SPELL_ATTR4_NOT_USABLE_IN_ARENA              = 0x00010000, // 16 not usable in arena
     SPELL_ATTR4_USABLE_IN_ARENA                  = 0x00020000, // 17 usable in arena
@@ -534,7 +534,19 @@ enum SpellAttr7
     SPELL_ATTR7_UNK16                            = 0x00010000, // 16 Druid spells (29166, 54833, 64372, 68285).
     SPELL_ATTR7_UNK17                            = 0x00020000, // 17 Only 27965 (Suicide) spell.
     SPELL_ATTR7_HAS_CHARGE_EFFECT                = 0x00040000, // 18 Only spells that have Charge among effects.
-    SPELL_ATTR7_ZONE_TELEPORT                    = 0x00080000  // 19 Teleports to specific zones.
+    SPELL_ATTR7_ZONE_TELEPORT                    = 0x00080000, // 19 Teleports to specific zones.
+    SPELL_ATTR7_UNK20                            = 0x00100000, // 20
+    SPELL_ATTR7_UNK21                            = 0x00200000, // 21
+    SPELL_ATTR7_UNK22                            = 0x00400000, // 22
+    SPELL_ATTR7_UNK23                            = 0x00800000, // 23
+    SPELL_ATTR7_UNK24                            = 0x01000000, // 24
+    SPELL_ATTR7_UNK25                            = 0x02000000, // 25
+    SPELL_ATTR7_UNK26                            = 0x04000000, // 26
+    SPELL_ATTR7_UNK27                            = 0x08000000, // 27
+    SPELL_ATTR7_UNK28                            = 0x10000000, // 28
+    SPELL_ATTR7_UNK29                            = 0x20000000, // 29
+    SPELL_ATTR7_UNK30                            = 0x40000000, // 30
+    SPELL_ATTR7_UNK31                            = 0x80000000  // 31
 };
 
 #define MIN_TALENT_SPEC         0
@@ -641,8 +653,6 @@ enum Team
     //TEAM_OUTLAND             = 980,
     TEAM_OTHER               = 0,                         // if ReputationListId > 0 && Flags != FACTION_FLAG_TEAM_HEADER
 };
-
-const Team TeamId2Team[3] = {ALLIANCE, HORDE, TEAM_OTHER};
 
 enum SpellEffects
 {
@@ -1211,12 +1221,6 @@ enum Mechanics
     (1<<MECHANIC_SHACKLE)|(1<<MECHANIC_TURN)|(1<<MECHANIC_HORROR)| \
     (1<<MECHANIC_DAZE)|(1<<MECHANIC_SAPPED))
 
-// Daze and all croud control spells except polymorph are not removed
-#define MECHANIC_NOT_REMOVED_BY_SHAPESHIFT (\
-    (1<<MECHANIC_CHARM)|(1<<MECHANIC_DISORIENTED)|(1<<MECHANIC_FEAR)|(1<<MECHANIC_PACIFY)| \
-    (1<<MECHANIC_STUN)|(1<<MECHANIC_FREEZE)|(1<<MECHANIC_BANISH)|(1<<MECHANIC_SHACKLE)| \
-    (1<<MECHANIC_HORROR)|(1<<MECHANIC_TURN)|(1<<MECHANIC_DAZE)|(1<<MECHANIC_SAPPED))
-
 // Spell dispell type
 enum DispelType
 {
@@ -1236,7 +1240,7 @@ enum DispelType
 
 #define DISPEL_ALL_MASK ((1<<DISPEL_MAGIC) | (1<<DISPEL_CURSE) | (1<<DISPEL_DISEASE) | (1<<DISPEL_POISON))
 
-//To all Immune system,if target has immunes,
+//To all Immune system, if target has immunes,
 //some spell that related to ImmuneToDispel or ImmuneToSchool or ImmuneToDamage type can't cast to it,
 //some spell_effects that related to ImmuneToEffect<effect>(only this effect in the spell) can't cast to it,
 //some aura(related to Mechanics or ImmuneToState<aura>) can't apply to it.
@@ -1447,6 +1451,7 @@ enum GameobjectTypes
 };
 
 #define MAX_GAMEOBJECT_TYPE                  36             // sending to client this or greater value can crash client.
+#define MAX_GAMEOBJECT_DATA                  24             // Max number of uint32 vars in gameobject_template data field
 
 enum GameObjectFlags
 {
@@ -2162,11 +2167,11 @@ enum CreatureTypeFlags
     CREATURE_TYPEFLAGS_UNK5             = 0x000010,
     CREATURE_TYPEFLAGS_UNK6             = 0x000020,
     CREATURE_TYPEFLAGS_UNK7             = 0x000040,
-    CREATURE_TYPEFLAGS_UNK8             = 0x000080,
+    CREATURE_TYPEFLAGS_DEAD_INTERACT    = 0x000080,         // Player can interact with the creature if its dead (not player dead)
     CREATURE_TYPEFLAGS_HERBLOOT         = 0x000100,         // Can be looted by herbalist
     CREATURE_TYPEFLAGS_MININGLOOT       = 0x000200,         // Can be looted by miner
     CREATURE_TYPEFLAGS_UNK11            = 0x000400,
-    CREATURE_TYPEFLAGS_UNK12            = 0x000800,         // ? Related to mounts in some way. If mounted, fight mounted, mount appear as independant when rider dies?
+    CREATURE_TYPEFLAGS_MOUNTED_COMBAT   = 0x000800,         // Creature can remain mounted when entering combat
     CREATURE_TYPEFLAGS_AID_PLAYERS      = 0x001000,         // ? Can aid any player in combat if in range?
     CREATURE_TYPEFLAGS_UNK14            = 0x002000,
     CREATURE_TYPEFLAGS_UNK15            = 0x004000,         // ? Possibly not in use
@@ -2708,6 +2713,8 @@ enum SummonCategory
     SUMMON_CATEGORY_PET         = 2,
     SUMMON_CATEGORY_PUPPET      = 3,
     SUMMON_CATEGORY_VEHICLE     = 4,
+    SUMMON_CATEGORY_UNK         = 5, // as of patch 3.3.5a only Bone Spike in Icecrown Citadel
+                                     // uses this category
 };
 
 enum SummonType

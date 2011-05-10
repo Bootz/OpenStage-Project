@@ -22,10 +22,15 @@
  *          if reached brann speaks through his radio..
  */
 
-#include "ScriptPCH.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "CombatAI.h"
+#include "PassiveAI.h"
 #include "ScriptedEscortAI.h"
+#include "ObjectMgr.h"
 #include "ulduar.h"
-#include "Vehicle.h"
+
 
 enum Spells
 {
@@ -182,29 +187,29 @@ Position const Center[]=
 
 Position const PosSiege[5] =
 {
-    {-814.59f,-64.54f,429.92f,5.969f},
-    {-784.37f,-33.31f,429.92f,5.096f},
-    {-808.99f,-52.10f,429.92f,5.668f},
-    {-798.59f,-44.00f,429.92f,5.663f},
-    {-812.83f,-77.71f,429.92f,0.046f},
+    {-814.59f, -64.54f, 429.92f, 5.969f},
+    {-784.37f, -33.31f, 429.92f, 5.096f},
+    {-808.99f, -52.10f, 429.92f, 5.668f},
+    {-798.59f, -44.00f, 429.92f, 5.663f},
+    {-812.83f, -77.71f, 429.92f, 0.046f},
 };
 
 Position const PosChopper[5] =
 {
-    {-717.83f,-106.56f,430.02f,0.122f},
-    {-717.83f,-114.23f,430.44f,0.122f},
-    {-717.83f,-109.70f,430.22f,0.122f},
-    {-718.45f,-118.24f,430.26f,0.052f},
-    {-718.45f,-123.58f,430.41f,0.085f},
+    {-717.83f, -106.56f, 430.02f, 0.122f},
+    {-717.83f, -114.23f, 430.44f, 0.122f},
+    {-717.83f, -109.70f, 430.22f, 0.122f},
+    {-718.45f, -118.24f, 430.26f, 0.052f},
+    {-718.45f, -123.58f, 430.41f, 0.085f},
 };
 
 Position const PosDemolisher[5] =
 {
-    {-724.12f,-176.64f,430.03f,2.543f},
-    {-766.70f,-225.03f,430.50f,1.710f},
-    {-729.54f,-186.26f,430.12f,1.902f},
-    {-756.01f,-219.23f,430.50f,2.369f},
-    {-798.01f,-227.24f,429.84f,1.446f},
+    {-724.12f, -176.64f, 430.03f, 2.543f},
+    {-766.70f, -225.03f, 430.50f, 1.710f},
+    {-729.54f, -186.26f, 430.12f, 1.902f},
+    {-756.01f, -219.23f, 430.50f, 2.369f},
+    {-798.01f, -227.24f, 429.84f, 1.446f},
 };
 
 class boss_flame_leviathan : public CreatureScript
@@ -221,7 +226,8 @@ class boss_flame_leviathan : public CreatureScript
             void InitializeAI()
             {
                 ASSERT(vehicle);
-                Reset();
+                if (!me->isDead())
+                    Reset();
                 ActiveTowersCount = 4;
                 Shutdown = 0;
                 ActiveTowers = false;
@@ -255,12 +261,6 @@ class boss_flame_leviathan : public CreatureScript
                 _Reset();
                 Shutdown = 0;
                 me->SetReactState(REACT_DEFENSIVE);
-                if (me->GetVehicleKit())
-                {
-                    me->GetVehicleKit()->Reset();
-                    if (me->GetVehicleKit()->GetPassenger(SEAT_CANNON))
-                        me->CastSpell(me->GetVehicleKit()->GetPassenger(SEAT_CANNON),AURA_STEALTH_DETECTION,false);
-                }
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -289,7 +289,7 @@ class boss_flame_leviathan : public CreatureScript
                     if (towerOfFlames)
                     {
                         me->AddAura(SPELL_BUFF_TOWER_OF_FLAMES, me);
-                        events.ScheduleEvent(EVENT_MIMIRON_S_INFERNO,70*IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_MIMIRON_S_INFERNO, 70*IN_MILLISECONDS);
                     }
 
                     if (towerOfFrost)
@@ -314,7 +314,7 @@ class boss_flame_leviathan : public CreatureScript
             }
 
             // TODO: effect 0 and effect 1 may be on different target
-            void SpellHitTarget(Unit* target, SpellEntry* const spell)
+            void SpellHitTarget(Unit* target, SpellEntry const* spell)
             {
                 if (spell->Id == SPELL_PURSUED)
                     AttackStart(target);
@@ -341,10 +341,10 @@ class boss_flame_leviathan : public CreatureScript
                 }
             }
 
-            void SpellHit(Unit* /*caster*/, SpellEntry* const spell)
+            void SpellHit(Unit* /*caster*/, SpellEntry const* spell)
             {
                 if (spell->Id == SPELL_START_THE_ENGINE)
-                    vehicle->InstallAllAccessories();
+                    vehicle->InstallAllAccessories(false);
 
                 if (spell->Id == SPELL_ELECTROSHOCK)
                     me->InterruptSpell(CURRENT_CHANNELED_SPELL);
@@ -381,7 +381,7 @@ class boss_flame_leviathan : public CreatureScript
 
                 events.Update(diff);
 
-                if (Shutdown == RAID_MODE(2,4))
+                if (Shutdown == RAID_MODE(2, 4))
                 {
                     Shutdown = 0;
                     events.ScheduleEvent(EVENT_SHUTDOWN, 4000);
@@ -416,7 +416,7 @@ class boss_flame_leviathan : public CreatureScript
                         break; // this is a must
                     case EVENT_PURSUE:
                         DoScriptText(RAND(SAY_TARGET_1, SAY_TARGET_2, SAY_TARGET_3), me);
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM,0,75,true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 75, true))
                         {
                             me->AddAura(SPELL_PURSUED, target);
                             me->MonsterTextEmote(EMOTE_PURSUE, target->GetGUID(), true);
@@ -459,7 +459,7 @@ class boss_flame_leviathan : public CreatureScript
                     case EVENT_THORIM_S_HAMMER: // Tower of Storms
                         for (uint8 i = 0; i < 7; ++i)
                         {
-                            if (Creature* thorim = DoSummon(NPC_THORIM_BEACON, me, float(urand(20,60)), 20000, TEMPSUMMON_TIMED_DESPAWN))
+                            if (Creature* thorim = DoSummon(NPC_THORIM_BEACON, me, float(urand(20, 60)), 20000, TEMPSUMMON_TIMED_DESPAWN))
                                 thorim->GetMotionMaster()->MoveRandom(100);
                         }
                         DoScriptText(SAY_TOWER_STORM, me);
@@ -594,12 +594,6 @@ class boss_flame_leviathan_seat : public CreatureScript
             InstanceScript* instance;
             Vehicle* vehicle;
 
-            void Reset()
-            {
-                if (me->GetVehicleKit())
-                    me->GetVehicleKit()->Reset();
-            }
-
             void PassengerBoarded(Unit* who, int8 seatId, bool apply)
             {
                 if (!me->GetVehicle())
@@ -662,6 +656,7 @@ class boss_flame_leviathan_defense_cannon : public CreatureScript
             void Reset ()
             {
                 NapalmTimer = 5000;
+                DoCast(me, AURA_STEALTH_DETECTION);
             }
 
             void UpdateAI(uint32 const diff)
@@ -671,7 +666,7 @@ class boss_flame_leviathan_defense_cannon : public CreatureScript
 
                 if (NapalmTimer <= diff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM,0))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         if(CanAIAttack(target))
                             DoCast(target, SPELL_NAPALM, true);
 
@@ -681,7 +676,7 @@ class boss_flame_leviathan_defense_cannon : public CreatureScript
                     NapalmTimer -= diff;
             }
 
-            bool CanAIAttack(Unit* const who) const
+            bool CanAIAttack(Unit const* who) const
             {
                 if (who->GetTypeId() != TYPEID_PLAYER || !who->GetVehicle() || who->GetVehicleBase()->GetEntry() == NPC_SEAT)
                     return false;
@@ -710,7 +705,7 @@ class boss_flame_leviathan_defense_turret : public CreatureScript
                     damage = 0;
             }
 
-            bool CanAIAttack(Unit* const who) const
+            bool CanAIAttack(Unit const* who) const
             {
                 if (who->GetTypeId() != TYPEID_PLAYER || !who->GetVehicle() || who->GetVehicleBase()->GetEntry() != NPC_SEAT)
                     return false;
@@ -773,7 +768,7 @@ class boss_flame_leviathan_safety_container : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
-                float x,y,z;
+                float x, y, z;
                 me->GetPosition(x, y, z);
                 z = me->GetMap()->GetHeight(x, y, z);
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
@@ -1030,7 +1025,7 @@ class npc_hodirs_fury : public CreatureScript
 
             void MoveInLineOfSight(Unit* who)
             {
-                if (who->GetTypeId() == TYPEID_PLAYER && who->IsVehicle() && me->IsInRange(who,0,5,false))
+                if (who->GetTypeId() == TYPEID_PLAYER && who->IsVehicle() && me->IsInRange(who, 0, 5, false))
                 {
                     if (Creature* trigger = DoSummonFlyer(NPC_HODIR_TARGET_BEACON, me, 20, 0, 1000, TEMPSUMMON_TIMED_DESPAWN))
                         trigger->CastSpell(who, SPELL_HODIR_S_FURY, true);
@@ -1180,9 +1175,9 @@ class npc_lorekeeper : public CreatureScript
                     if (player)
                     {
                         player->PrepareGossipMenu(creature);
-                        instance->instance->LoadGrid(364,-16); //make sure leviathan is loaded
+                        instance->instance->LoadGrid(364, -16); //make sure leviathan is loaded
 
-                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_2,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF+2);
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
                         player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
                     }
                     break;
@@ -1217,7 +1212,7 @@ class npc_lorekeeper : public CreatureScript
             {
                 player->PrepareGossipMenu(creature);
 
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF+1);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
                 player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
             }
             return true;
@@ -1250,7 +1245,7 @@ public:
     //            {
     //                pPlayer->PrepareGossipMenu(creature);
     //
-    //                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_2,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF+2);
+    //                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
     //                pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(creature), creature->GetGUID());
     //            }
     //            break;
@@ -1270,7 +1265,7 @@ public:
     //    {
     //        pPlayer->PrepareGossipMenu(creature);
     //
-    //        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF+1);
+    //        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
     //        pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(creature), creature->GetGUID());
     //    }
     //    return true;
@@ -1284,7 +1279,7 @@ class go_ulduar_tower : public GameObjectScript
     public:
         go_ulduar_tower() : GameObjectScript("go_ulduar_tower") { }
 
-        void OnDestroyed(Player* /*pPlayer*/, GameObject* go, uint32 /*value*/)
+        void OnDestroyed(GameObject* go, Player* /*pPlayer*/,  uint32 /*value*/)
         {
             InstanceScript* instance = go->GetInstanceScript();
             if (!instance)

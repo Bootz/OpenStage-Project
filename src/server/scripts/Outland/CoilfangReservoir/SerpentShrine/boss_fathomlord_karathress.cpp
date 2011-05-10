@@ -201,7 +201,7 @@ public:
 
         void KilledUnit(Unit * /*victim*/)
         {
-            DoScriptText(RAND(SAY_SLAY1,SAY_SLAY2,SAY_SLAY3), me);
+            DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
         }
 
         void JustDied(Unit * /*killer*/)
@@ -293,7 +293,7 @@ public:
                 if (continueTriggering)
                 {
                     DoCast(me, SPELL_BLESSING_OF_THE_TIDES);
-                    me->MonsterYell(SAY_GAIN_BLESSING_OF_TIDES, LANG_UNIVERSAL, NULL);
+                    me->MonsterYell(SAY_GAIN_BLESSING_OF_TIDES, LANG_UNIVERSAL, 0);
                     DoPlaySoundToSet(me, SOUND_GAIN_BLESSING_OF_TIDES);
                 }
             }
@@ -432,7 +432,7 @@ public:
                 pet = true;
                 //uint32 spell_id;
                 uint32 pet_id;
-                if (!urand(0,1))
+                if (!urand(0, 1))
                 {
                     //spell_id = SPELL_SUMMON_FATHOM_LURKER;
                     pet_id = CREATURE_FATHOM_LURKER;
@@ -443,8 +443,8 @@ public:
                     pet_id = CREATURE_FATHOM_SPOREBAT;
                 }
                 //DoCast(me, spell_id, true);
-                Creature *Pet = DoSpawnCreature(pet_id,0,0,0,0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
+                Creature *Pet = DoSpawnCreature(pet_id, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (Pet && pTarget)
                 {
                     Pet->AI()->AttackStart(pTarget);

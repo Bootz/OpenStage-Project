@@ -76,7 +76,7 @@ enum AchievementCriteriaCondition
     ACHIEVEMENT_CRITERIA_CONDITION_NONE         = 0,
     ACHIEVEMENT_CRITERIA_CONDITION_NO_DEATH     = 1,    // reset progress on death
     ACHIEVEMENT_CRITERIA_CONDITION_UNK1         = 2,    // only used in "Complete a daily quest every day for five consecutive days"
-    ACHIEVEMENT_CRITERIA_CONDITION_MAP          = 3,    // requires you to be on specific map, reset at change
+    ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP       = 3,    // requires you to be on specific map, reset at change
     ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE      = 4,    // only used in "Win 10 arenas without losing"
     ACHIEVEMENT_CRITERIA_CONDITION_UNK2         = 9,    // unk
     ACHIEVEMENT_CRITERIA_CONDITION_NOT_IN_GROUP = 10,   // requires the player not to be in group
@@ -225,6 +225,11 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_TOTAL = 124,
 };
 
+enum AchievementCategory
+{
+    CATEGORY_CHILDRENS_WEEK     = 163,
+};
+
 enum AreaFlags
 {
     AREA_FLAG_SNOW             = 0x00000001,                // snow (only Dun Morogh, Naxxramas, Razorfen Downs and Winterspring)
@@ -278,7 +283,7 @@ enum Difficulty
 
 enum SpawnMask
 {
-    SPAWNMASK_CONTINENT         = (1 << REGULAR_DIFFICULTY),// any any maps without spawn modes
+    SPAWNMASK_CONTINENT         = (1 << REGULAR_DIFFICULTY), // any any maps without spawn modes
 
     SPAWNMASK_DUNGEON_NORMAL    = (1 << DUNGEON_DIFFICULTY_NORMAL),
     SPAWNMASK_DUNGEON_HEROIC    = (1 << DUNGEON_DIFFICULTY_HEROIC),

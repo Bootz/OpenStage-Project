@@ -337,18 +337,16 @@ bool fillArchiveNameVector(std::vector<std::string>& pArchiveNames)
     for (std::vector<std::string>::iterator i = locales.begin(); i != locales.end(); ++i)
     {
         pArchiveNames.push_back(in_path + *i + "/locale-" + *i + ".MPQ");
-
+        pArchiveNames.push_back(in_path + *i + "/expansion-locale-" + *i + ".MPQ");
+        pArchiveNames.push_back(in_path + *i + "/lichking-locale-" + *i + ".MPQ");
     }
 
     // open expansion and common files
-    pArchiveNames.push_back(input_path + string("base.MPQ"));
-    pArchiveNames.push_back(input_path + string("model.MPQ"));
-    pArchiveNames.push_back(input_path + string("misc.MPQ"));
-    pArchiveNames.push_back(input_path + string("terrain.MPQ"));
-    pArchiveNames.push_back(input_path + string("texture.MPQ"));
-    pArchiveNames.push_back(input_path + string("dbc.MPQ"));
-    pArchiveNames.push_back(input_path + string("wmo.MPQ"));
-	
+    pArchiveNames.push_back(input_path + string("common.MPQ"));
+    pArchiveNames.push_back(input_path + string("common-2.MPQ"));
+    pArchiveNames.push_back(input_path + string("expansion.MPQ"));
+    pArchiveNames.push_back(input_path + string("lichking.MPQ"));
+
     // now, scan for the patch levels in the core dir
     printf("Scanning patch levels from data directory.\n");
     sprintf(path, "%spatch", input_path);
@@ -442,7 +440,7 @@ bool processArgv(int argc, char ** argv, const char *versionString)
 int main(int argc, char ** argv)
 {
     bool success=true;
-    const char *versionString = "V4.00 2011_04";
+    const char *versionString = "V3.00 2010_07";
 
     // Use command line arguments, when some
     if(!processArgv(argc, argv, versionString))

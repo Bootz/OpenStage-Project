@@ -129,7 +129,7 @@ public:
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 {
                     Player* plr = itr->getSource();
-                    if (plr && !plr->HasAura(45839,0))
+                    if (plr && !plr->HasAura(45839, 0))
                             return plr;
                 }
             }
@@ -167,13 +167,13 @@ public:
                 case 188524: KalecgosWall[0] = go->GetGUID(); break;
                 case 188075:
                     if (m_auiEncounter[2] == DONE)
-                        HandleGameObject(NULL, true, go);
+                        HandleGameObject(0, true, go);
                     FireBarrier = go->GetGUID();
                     break;
                 case 187990: MurusGate[0]   = go->GetGUID(); break;
                 case 188118:
                     if (m_auiEncounter[4] == DONE)
-                        HandleGameObject(NULL, true, go);
+                        HandleGameObject(0, true, go);
                     MurusGate[1]= go->GetGUID();
                     break;
             }
@@ -226,15 +226,15 @@ public:
                     {
                         if (data == NOT_STARTED || data == DONE)
                         {
-                            HandleGameObject(ForceField,true);
-                            HandleGameObject(KalecgosWall[0],true);
-                            HandleGameObject(KalecgosWall[1],true);
+                            HandleGameObject(ForceField, true);
+                            HandleGameObject(KalecgosWall[0], true);
+                            HandleGameObject(KalecgosWall[1], true);
                         }
                         else if (data == IN_PROGRESS)
                         {
-                            HandleGameObject(ForceField,false);
-                            HandleGameObject(KalecgosWall[0],false);
-                            HandleGameObject(KalecgosWall[1],false);
+                            HandleGameObject(ForceField, false);
+                            HandleGameObject(KalecgosWall[0], false);
+                            HandleGameObject(KalecgosWall[1], false);
                         }
                         m_auiEncounter[0] = data;
                     }

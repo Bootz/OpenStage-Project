@@ -15,7 +15,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptPCH.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
 #include "ulduar.h"
 
 enum Yells
@@ -69,7 +70,7 @@ public:
 
         void KilledUnit(Unit * /*victim*/)
         {
-            DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2), me);
+            DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
         }
 
         void JustDied(Unit * /*victim*/)
@@ -80,7 +81,7 @@ public:
 
         void EnterCombat(Unit* /*pWho*/)
         {
-            DoScriptText(RAND(SAY_AGGRO_1,SAY_AGGRO_2), me);
+            DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2), me);
             _EnterCombat();
         }
 
