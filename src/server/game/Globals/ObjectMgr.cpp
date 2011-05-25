@@ -1133,9 +1133,7 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelRandomGender(uint32* display
     {
         CreatureModelInfo const *minfo_tmp = GetCreatureModelInfo(minfo->modelid_other_gender);
         if (!minfo_tmp)
-        {
-            sLog->outErrorDb("Model (Entry: %u) has modelid_other_gender %u not found in table `creature_model_info`. ", displayID, minfo->modelid_other_gender);
-        }
+            sLog->outErrorDb("Model (Entry: %u) has modelid_other_gender %u not found in table `creature_model_info`. ", *displayID, minfo->modelid_other_gender);
         else
         {
             // Model ID changed
@@ -1560,8 +1558,6 @@ void ObjectMgr::LoadCreatures()
                 sLog->outErrorDb("Table `creature` have creature (GUID: %u Entry: %u) with `MovementType`=1 (random movement) but with `spawndist`=0, replace by idle movement type (0).", guid, data.id);
                 data.movementType = IDLE_MOTION_TYPE;
             }
-            else if (cInfo->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
-                data.movementType = IDLE_MOTION_TYPE;
         }
         else if (data.movementType == IDLE_MOTION_TYPE)
         {
@@ -8020,7 +8016,7 @@ bool ObjectMgr::CheckDeclinedNames(std::wstring w_ownname, DeclinedName const& n
 
         if (mainpart != GetMainPartOfName(wname, i+1))
             x = false;
- 
+
         if (w_ownname != wname)
             y = false;
     }

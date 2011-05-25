@@ -1022,18 +1022,15 @@ public:
             if (!instance)
                 return;
 
-            if (Creature* malygos = Unit::GetCreature(*me, instance->GetData64(DATA_MALYGOS)))
+            if (Unit* summoner = me->ToTempSummon()->GetSummoner())
             {
-                if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                if (Creature* malygos = Unit::GetCreature(*me, instance->GetData64(DATA_MALYGOS)))
                 {
                     summoner->CastSpell(me, SPELL_RIDE_RED_DRAGON, true);
-                    if (Creature* malygos = Unit::GetCreature(*me, instance->GetData64(DATA_MALYGOS)))
-                    {
-                        float victim_threat = malygos->getThreatManager().getThreat(summoner);
-                        malygos->getThreatManager().resetAllAggro();
-                        malygos->AI()->AttackStart(me);
-                        malygos->AddThreat(me, victim_threat);
-                    }
+                    float victim_threat = malygos->getThreatManager().getThreat(summoner);
+                    malygos->getThreatManager().resetAllAggro();
+                    malygos->AI()->AttackStart(me);
+                    malygos->AddThreat(me, victim_threat);
                 }
             }
         }
@@ -1115,6 +1112,20 @@ public:
     };
 };
 
+class achievement_denyin_the_scion : public AchievementCriteriaScript
+{
+    public:
+        achievement_denyin_the_scion() : AchievementCriteriaScript("achievement_denyin_the_scion") { }
+
+        bool OnCheck(Player* source, Unit* /*target*/)
+        {
+            if (Unit* disk = source->GetVehicleBase())
+                if (disk->GetEntry() == NPC_HOVER_DISK_CASTER || disk->GetEntry() == NPC_HOVER_DISK_MELEE)
+                    return true;
+            return false;
+        }
+};
+
 void AddSC_boss_malygos()
 {
     new boss_malygos();
@@ -1126,4 +1137,5 @@ void AddSC_boss_malygos()
     new spell_malygos_vortex_dummy();
     new spell_malygos_vortex_visual();
     new npc_alexstrasza_eoe();
+    new achievement_denyin_the_scion();
 }
