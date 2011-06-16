@@ -345,10 +345,10 @@ enum EyeOfAcherus
 //#define SAY_EYE_UNDER_CONTROL     "You are now in control of the eye."
 
 // for some reason yells aren't working correctly yet.
-enum YELLS
+enum Yells
 {
-SAY_EYE_LAUNCHED            = -1666451,
-SAY_EYE_UNDER_CONTROL       = -1666452
+    SAY_EYE_LAUNCHED            = -1666451,
+    SAY_EYE_UNDER_CONTROL       = -1666452
 };
         
 static Position Center[]=
@@ -384,7 +384,7 @@ public:
             me->CastSpell(me, 51890, true);
             me->SetDisplayId(26320);
             
-			DoScriptText(SAY_EYE_LAUNCHED, me);
+            DoScriptText(SAY_EYE_LAUNCHED, me);
             me->SetHomePosition(2363.970589f, -5659.861328f, 504.316833f, 0);
             me->GetMotionMaster()->MoveCharge(1752.858276f, -5878.270996f, 145.136444f, 0); //position center
             me->SetReactState(REACT_AGGRESSIVE);
@@ -415,10 +415,10 @@ public:
                     me->CastSpell(me, 51890, true);
                     
                     // workaround for faster flight speed
-                    me->CastSpell(me, 51923, true);
-                    me->SetSpeed(MOVE_FLIGHT , 3.4f,true);				
+                    //me->CastSpell(me, 51923, true);
+                    //me->SetSpeed(MOVE_FLIGHT , 3.4f,true);				
 				     
-                    me->GetMotionMaster()->MovePoint(0, 1711.0f, -5820.0f, 147.0f);
+                    //me->GetMotionMaster()->MovePoint(0, 1711.0f, -5820.0f, 147.0f);
                     return;    // was "me = true;" causing errors
                 }
                 else
@@ -441,7 +441,7 @@ public:
             // for some reason it does not work when this spell is casted before the waypoint movement
             me->CastSpell(me, 51892, true);
             me->CastSpell(me, 51890, true);
- 			DoScriptText(SAY_EYE_UNDER_CONTROL, me);           
+            DoScriptText(SAY_EYE_UNDER_CONTROL, me);           
 			((Player*)(me->GetCharmer()))->SetClientControl(me, 1);
         }
 
@@ -756,12 +756,15 @@ public:
                 {
                     if (Unit *charmer = caster->GetCharmer())
                     {
-                        charmer->RemoveAurasDueToSpell(EFFECT_STOLEN_HORSE);
-                        caster->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-                        caster->setFaction(35);
-                        DoCast(caster, CALL_DARK_RIDER, true);
-                        if (Creature* Dark_Rider = me->FindNearestCreature(28654, 15))
-                            CAST_AI(npc_dark_rider_of_acherus::npc_dark_rider_of_acherusAI, Dark_Rider->AI())->InitDespawnHorse(caster);
+                        if (charmer->HasAura(EFFECT_STOLEN_HORSE))
+                        {
+                            charmer->RemoveAurasDueToSpell(EFFECT_STOLEN_HORSE);
+                            caster->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                            caster->setFaction(35);
+                            DoCast(caster, CALL_DARK_RIDER, true);
+                            if (Creature* Dark_Rider = me->FindNearestCreature(28654, 15))
+                                CAST_AI(npc_dark_rider_of_acherus::npc_dark_rider_of_acherusAI, Dark_Rider->AI())->InitDespawnHorse(caster);
+                        }
                     }
                 }
             }
@@ -1207,7 +1210,7 @@ void AddSC_the_scarlet_enclave_c1()
     new npc_unworthy_initiate();
     new npc_unworthy_initiate_anchor();
     new go_acherus_soul_prison();
-    new npc_eye_of_acherus();
+    new npc_eye_of_acherus();  
     new npc_death_knight_initiate();
     new npc_salanar_the_horseman();
     new npc_dark_rider_of_acherus();

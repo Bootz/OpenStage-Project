@@ -717,10 +717,12 @@ class spell_putricide_gaseous_bloat : public SpellScriptLoader
             void HandleExtraEffect(AuraEffect const* /*aurEff*/)
             {
                 Unit* target = GetTarget();
-                Unit* caster = GetCaster();
-                target->RemoveAuraFromStack(GetSpellProto()->Id, GetCasterGUID());
-                if (!target->HasAura(GetId()) && caster && caster->GetTypeId() == TYPEID_UNIT)
-                    caster->ToCreature()->DespawnOrUnsummon();
+                if (Unit* caster = GetCaster())
+                {
+                    target->RemoveAuraFromStack(GetSpellProto()->Id, GetCasterGUID());
+                    if (!target->HasAura(GetId())&& caster->GetTypeId() == TYPEID_UNIT)
+                        caster->ToCreature()->DespawnOrUnsummon();
+                }
             }
 
             void Register()
@@ -1232,8 +1234,6 @@ class spell_putricide_mutated_plague : public SpellScriptLoader
 
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_STACK)
-                    return;
                 uint32 healSpell = uint32(SpellMgr::CalculateSpellEffectAmount(GetSpellProto(), 0));
                 GetTarget()->CastSpell(GetTarget(), healSpell, true, NULL, NULL, GetCasterGUID());
             }
@@ -1241,7 +1241,7 @@ class spell_putricide_mutated_plague : public SpellScriptLoader
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_putricide_mutated_plague_AuraScript::HandleTriggerSpell, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
-                OnEffectRemove += AuraEffectRemoveFn(spell_putricide_mutated_plague_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_putricide_mutated_plague_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -1325,7 +1325,7 @@ class spell_putricide_mutation_init : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_putricide_mutation_init_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_putricide_mutation_init_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -1357,7 +1357,7 @@ class spell_putricide_mutated_transformation_dismiss : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_putricide_mutated_transformation_dismiss_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_putricide_mutated_transformation_dismiss_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
             }
         };
 

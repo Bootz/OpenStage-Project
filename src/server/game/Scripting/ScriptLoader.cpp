@@ -63,9 +63,7 @@ void AddSC_wp_commandscript();
 #ifdef SCRIPTS
 //world
 void AddSC_areatrigger_scripts();
-void AddSC_boss_emeriss();
-void AddSC_boss_taerar();
-void AddSC_boss_ysondre();
+void AddSC_emerald_dragons();
 void AddSC_generic_creature();
 void AddSC_go_scripts();
 void AddSC_guards();
@@ -482,6 +480,11 @@ void AddSC_boss_sindragosa();
 void AddSC_icecrown_citadel_teleport();
 void AddSC_instance_icecrown_citadel();
 void AddSC_icecrown_citadel();
+void AddSC_instance_ruby_sanctum();      // Ruby Sanctum
+void AddSC_ruby_sanctum();
+void AddSC_boss_baltharus_the_warborn();
+void AddSC_boss_saviana_ragefire();
+void AddSC_boss_general_zarithrian();
 
 void AddSC_dalaran();
 void AddSC_borean_tundra();
@@ -661,9 +664,7 @@ void AddWorldScripts()
 {
 #ifdef SCRIPTS
     AddSC_areatrigger_scripts();
-    AddSC_boss_emeriss();
-    AddSC_boss_taerar();
-    AddSC_boss_ysondre();
+    AddSC_emerald_dragons();
     AddSC_generic_creature();
     AddSC_go_scripts();
     AddSC_guards();
@@ -1179,6 +1180,11 @@ void AddNorthrendScripts()
     AddSC_icecrown_citadel_teleport();
     AddSC_instance_icecrown_citadel();
     AddSC_icecrown_citadel();
+    AddSC_instance_ruby_sanctum();      // Ruby Sanctum
+    AddSC_ruby_sanctum();
+    AddSC_boss_baltharus_the_warborn();
+    AddSC_boss_saviana_ragefire();
+    AddSC_boss_general_zarithrian();
 
     AddSC_dalaran();
     AddSC_borean_tundra();

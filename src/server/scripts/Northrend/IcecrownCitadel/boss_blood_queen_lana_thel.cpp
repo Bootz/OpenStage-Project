@@ -143,6 +143,7 @@ class boss_blood_queen_lana_thel : public CreatureScript
                 events.ScheduleEvent(EVENT_SWARMING_SHADOWS, 30500, EVENT_GROUP_NORMAL);
                 events.ScheduleEvent(EVENT_TWILIGHT_BLOODBOLT, urand(20000, 25000), EVENT_GROUP_NORMAL);
                 events.ScheduleEvent(EVENT_AIR_PHASE, 124000 + uint32(Is25ManRaid() ? 3000 : 0));
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNCONTROLLABLE_FRENZY);
                 me->SetSpeed(MOVE_FLIGHT, 0.642857f, true);
                 _offtank = NULL;
                 _vampires.clear();
@@ -282,7 +283,7 @@ class boss_blood_queen_lana_thel : public CreatureScript
                         me->SetFlying(false);
                         me->SendMovementFlagUpdate();
                         me->SetReactState(REACT_AGGRESSIVE);
-                        if (Unit *victim = me->SelectVictim())
+                        if (Unit* victim = me->SelectVictim())
                             AttackStart(victim);
                         events.ScheduleEvent(EVENT_BLOOD_MIRROR, 2500, EVENT_GROUP_CANCELLABLE);
                         break;
@@ -585,7 +586,7 @@ class spell_blood_queen_frenzied_bloodthirst : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_blood_queen_frenzied_bloodthirst_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_OVERRIDE_SPELLS, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_blood_queen_frenzied_bloodthirst_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_OVERRIDE_SPELLS, AURA_EFFECT_HANDLE_REAL);
             }
         };
 

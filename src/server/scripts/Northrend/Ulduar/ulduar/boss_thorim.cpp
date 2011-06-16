@@ -48,7 +48,7 @@ public:
 
     CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new boss_thorimAI(pCreature);
+        return GetUlduarAI<boss_thorimAI>(pCreature);
     }
 
     struct boss_thorimAI : public BossAI
@@ -68,12 +68,12 @@ public:
             _EnterEvadeMode();
         }
 
-        void KilledUnit(Unit * /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
         }
 
-        void JustDied(Unit * /*victim*/)
+        void JustDied(Unit* /*victim*/)
         {
             DoScriptText(SAY_DEATH, me);
             _JustDied();

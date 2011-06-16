@@ -348,7 +348,7 @@ struct SpellClickInfo
     SpellClickUserTypes userType;
 
     // helpers
-    bool IsFitToRequirements(Unit const* clicker, Unit const * clickee) const;
+    bool IsFitToRequirements(Unit const* clicker, Unit const* clickee) const;
 };
 
 typedef std::multimap<uint32, SpellClickInfo> SpellClickInfoMap;
@@ -475,19 +475,19 @@ struct PointOfInterest
 
 struct GossipMenuItems
 {
-    uint32          menu_id;
-    uint32          id;
-    uint8           option_icon;
-    std::string     option_text;
-    uint32          option_id;
-    uint32          npc_option_npcflag;
-    uint32          action_menu_id;
-    uint32          action_poi_id;
-    uint32          action_script_id;
-    bool            box_coded;
-    uint32          box_money;
-    std::string     box_text;
-    ConditionList   conditions;
+    uint32          MenuId;
+    uint32          OptionIndex;
+    uint8           OptionIcon;
+    std::string     OptionText;
+    uint32          OptionType;
+    uint32          OptionNpcflag;
+    uint32          ActionMenuId;
+    uint32          ActionPoiId;
+    uint32          ActionScriptId;
+    bool            BoxCoded;
+    uint32          BoxMoney;
+    std::string     BoxText;
+    ConditionList   Conditions;
 };
 
 struct GossipMenus
@@ -537,9 +537,6 @@ struct GraveYardData
     uint32 team;
 };
 typedef std::multimap<uint32, GraveYardData> GraveYardMap;
-
-// NPC gossip text id
-typedef UNORDERED_MAP<uint32, uint32> CacheNpcTextIdMap;
 
 typedef UNORDERED_MAP<uint32, VendorItemData> CacheVendorItemMap;
 typedef UNORDERED_MAP<uint32, TrainerSpellData> CacheTrainerSpellMap;
@@ -648,7 +645,7 @@ class ObjectMgr
         ItemSetNameEntry const* GetItemSetNameEntry(uint32 itemId)
         {
             ItemSetNameMap::iterator itr = mItemSetNameMap.find(itemId);
-            if(itr != mItemSetNameMap.end())
+            if (itr != mItemSetNameMap.end())
                 return &itr->second;
             return NULL;
         }
@@ -1148,15 +1145,6 @@ class ObjectMgr
         bool AddGameTele(GameTele& data);
         bool DeleteGameTele(const std::string& name);
 
-        uint32 GetNpcGossip(uint32 entry) const
-        {
-            CacheNpcTextIdMap::const_iterator iter = m_mCacheNpcTextIdMap.find(entry);
-            if (iter == m_mCacheNpcTextIdMap.end())
-                return 0;
-
-            return iter->second;
-        }
-
         TrainerSpellData const* GetNpcTrainerSpells(uint32 entry) const
         {
             CacheTrainerSpellMap::const_iterator  iter = m_mCacheTrainerSpellMap.find(entry);
@@ -1369,7 +1357,6 @@ class ObjectMgr
         RespawnTimes mGORespawnTimes;
         ACE_Thread_Mutex m_GORespawnTimesMtx;
 
-        CacheNpcTextIdMap m_mCacheNpcTextIdMap;
         CacheVendorItemMap m_mCacheVendorItemMap;
         CacheTrainerSpellMap m_mCacheTrainerSpellMap;
 
