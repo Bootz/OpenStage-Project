@@ -1,5 +1,9 @@
-UPDATE creature_template SET modelid1 = 16925, modelid2 = 16925, scale = 2, flags_extra = 0 WHERE entry IN (28525,28542,28543,28544);
-UPDATE quest_template SET ReqSpellCast1 = 51859, ReqSpellCast2 = 51859, ReqSpellCast3 = 51859, ReqSpellCast4 = 51859 WHERE entry = 12641;
+-- correct movements for eye of achrus (quest = id 12641) -death comes from high
+-- commenting out any template changes,,, Templates are set by blizzard. no touching.
+
+-- UPDATE creature_template SET modelid1 = 16925, modelid2 = 16925, scale = 2, flags_extra = 0 WHERE entry IN (28525,28542,28543,28544);
+-- UPDATE quest_template SET ReqSpellCast1 = 51859, ReqSpellCast2 = 51859, ReqSpellCast3 = 51859, ReqSpellCast4 = 51859 WHERE entry = 12641;
+-- UPDATE creature_template SET minlevel = 55, maxlevel = 55, Armor_mod = 9730, Speed_walk = 3, Speed_run = 6.48571 WHERE entry = 28511;
 
 UPDATE creature SET phaseMask = 2 WHERE guid IN 
 (128627,128628,128629,128630,128631,128632,128633,128634,128635,128636,128637,128643,128644,128645,128646,
@@ -13,7 +17,6 @@ UPDATE creature SET phaseMask = 2 WHERE guid IN
 129478,129479,129483,129484,129485,129486,129487,129488,129489,129490,129491);
 
 UPDATE gameobject SET phaseMask = 3 WHERE guid IN (65961,65962,65963,65964,65965,65966);
-UPDATE creature_template SET minlevel = 55, maxlevel = 55, Armor_mod = 9730, Speed_walk = 3, Speed_run = 6.48571 WHERE entry = 28511;
 UPDATE creature SET phaseMask = 3 WHERE guid = 128738;
 
 -- script_text
