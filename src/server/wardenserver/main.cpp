@@ -106,7 +106,7 @@ extern int main(int argc, char **argv)
     ///- Launch the listening network socket
     ACE_Acceptor<WardenSocket, ACE_SOCK_Acceptor> acceptor;
 
-    uint16 rmport = sConfig->GetIntDefault("WardenServerPort", 3724);
+    uint16 rmport = sConfig->GetIntDefault("WardenServerPort", 6555);
     std::string bind_ip = sConfig->GetStringDefault("BindIP", "0.0.0.0");
 
     ACE_INET_Addr bind_addr(rmport, bind_ip.c_str());

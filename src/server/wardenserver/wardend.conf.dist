@@ -31,9 +31,9 @@ LogsDir = ""
 #
 #    WardenServerPort
 #        Description: TCP port to reach the wardend server.
-#        Default:     4321
+#        Default:     6555
 
-WardenServerPort = 4321
+WardenServerPort = 6555
 
 #
 #

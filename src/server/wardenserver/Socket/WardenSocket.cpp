@@ -86,7 +86,7 @@ void WardenSocket::OnRead()
             char sign[7];
             if(!recv_soft(sign, 7) || strcmp(sign, WARDEND_SIGN))
             {
-                sLog->outStaticDebug("Received a connection not from Mangos '%s'.", sign);
+                sLog->outStaticDebug("Received a connection not from Trinity '%s'.", sign);
                 recv_skip(recv_len());
                 return;
             }

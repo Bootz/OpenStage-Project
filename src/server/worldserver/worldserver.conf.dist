@@ -2799,16 +2799,16 @@ Wardend.enable = 1
 Wardend.ban = 1
 
 #   Wardend.address
-#        IP Address of the computer running the Win32 Warden Daemon
-#        Default: 127.0.0.1  - Assume you run the Warden Daemon on the same machine as Mangos Daemon and on Windows
+#        IP Address of the computer running the Warden Daemon.
+#        Default: 127.0.0.1  - Assume you run the Warden Daemon on the same machine as Trinity Daemon
 
 Wardend.address = "127.0.0.1"
 
 #   Wardend.port
 #        Port on which the Warden Daemon listens
-#        Default: 4321
+#        Default: 6555
 
-Wardend.port = 4321
+Wardend.port = 6555
 
 #
 ###################################################################################################

@@ -1684,7 +1684,7 @@ void World::SetInitialWorldSettings()
     {
         sLog->outString("Starting Warden system...");
         sWardenMgr->Initialize(sConfig->GetStringDefault("wardend.address","127.0.0.1").c_str(),
-        sConfig->GetIntDefault("wardend.port", 4321),
+        sConfig->GetIntDefault("wardend.port", 6555),
         sConfig->GetBoolDefault("wardend.ban", false));
         m_timers[WUPDATE_WARDEN].SetInterval(1 * IN_MILLISECONDS);
     }

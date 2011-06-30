@@ -429,7 +429,7 @@ void WardenMgr::ForceCheckForSession(WorldSession* const session)
 
     if (session->m_wardenStatus == WARD_STATE_UNREGISTERED ||
         session->m_wardenStatus == WARD_STATE_FORCE_CHEAT_CHECK_OUT ||
-        session->m_wardenStatus ==WARD_STATE_USER_DISABLED)
+        session->m_wardenStatus == WARD_STATE_USER_DISABLED)
         return;
 
         session->m_wardenStatus = WARD_STATE_FORCE_CHEAT_CHECK_IN;
@@ -1200,7 +1200,7 @@ void WardenMgr::ReactToCheatCheckResult(WorldSession* const session, bool result
     {
         if (m_Banning)
         {
-            std::string sText = ("Игрок: " + std::string(session->GetPlayerName()) + " использовал читерское ПО и был забанен на 1 день.");
+            std::string sText = ("player: " + std::string(session->GetPlayerName()) + " using cheat software and was banned for a day.");
             sWorld->SendGMText(LANG_GM_BROADCAST, sText.c_str());
             sWorld->BanAccount(session, 24 * HOUR, "Cheating software user", "Server guard");
         }
