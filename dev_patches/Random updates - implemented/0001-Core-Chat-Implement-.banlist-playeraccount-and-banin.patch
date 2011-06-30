@@ -1,0 +1,121 @@
+From 2142987b594acdfd71e64e62b267ff12916d06ea Mon Sep 17 00:00:00 2001
+From: Aptiva <Stage6Dev@EMPulseGaming.com>
+Date: Sun, 19 Jun 2011 10:13:55 -0500
+Subject: [PATCH 1/2] Core/Chat: Implement `.banlist playeraccount` and `baninfo playeraccount` commands
+
+Signed-off-by: Aptiva <Stage6Dev@EMPulseGaming.com>
+---
+ ...baninfo_banlist_playeraccount_command_world.sql |    4 ++
+ src/server/game/Chat/Chat.cpp                      |    2 +
+ src/server/game/Chat/Chat.h                        |    2 +
+ src/server/game/Chat/Commands/Level3.cpp           |   39 ++++++++++++++++++++
+ 4 files changed, 47 insertions(+), 0 deletions(-)
+ create mode 100644 sql/updates/fc_updates/baninfo_banlist_playeraccount_command_world.sql
+
+diff --git a/sql/updates/fc_updates/baninfo_banlist_playeraccount_command_world.sql b/sql/updates/fc_updates/baninfo_banlist_playeraccount_command_world.sql
+new file mode 100644
+index 0000000..3d63cd6
+--- /dev/null
++++ b/sql/updates/fc_updates/baninfo_banlist_playeraccount_command_world.sql
+@@ -0,0 +1,4 @@
++DELETE FROM `command` WHERE `name` IN ('baninfo playeraccount', 'banlist playeraccount');
++INSERT INTO `command` VALUES
++('baninfo playeraccount', 3, 'Syntax: .baninfo playeraccount $playerName\r\nWatch full information about a specific ban.'),
++('banlist playeraccount', 3, 'Syntax: .banlist playeraccount [$Name]\r\nSearches the banlist for accounts according to a character name pattern.');
+\ No newline at end of file
+diff --git a/src/server/game/Chat/Chat.cpp b/src/server/game/Chat/Chat.cpp
+index 6142f52..0930ed5 100644
+--- a/src/server/game/Chat/Chat.cpp
++++ b/src/server/game/Chat/Chat.cpp
+@@ -80,6 +80,7 @@ ChatCommand * ChatHandler::getCommandTable()
+     {
+         { "account",        SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleBanInfoAccountCommand>,      "", NULL },
+         { "character",      SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleBanInfoCharacterCommand>,    "", NULL },
++        { "playeraccount",  SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleBanInfoAccountByCharCommand>,"", NULL },
+         { "ip",             SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleBanInfoIPCommand>,           "", NULL },
+         { NULL,             0,                  false, NULL,                                           "", NULL }
+     };
+@@ -88,6 +89,7 @@ ChatCommand * ChatHandler::getCommandTable()
+     {
+         { "account",        SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleBanListAccountCommand>,      "", NULL },
+         { "character",      SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleBanListCharacterCommand>,    "", NULL },
++        { "playeraccount",  SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleBanListPlayerAccountCommand>,"", NULL },
+         { "ip",             SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleBanListIPCommand>,           "", NULL },
+         { NULL,             0,                  false, NULL,                                           "", NULL }
+     };
+diff --git a/src/server/game/Chat/Chat.h b/src/server/game/Chat/Chat.h
+index dd845c1..8705bbb 100644
+--- a/src/server/game/Chat/Chat.h
++++ b/src/server/game/Chat/Chat.h
+@@ -142,9 +142,11 @@ class ChatHandler
+         bool HandleBanIPCommand(const char* args);
+         bool HandleBanInfoAccountCommand(const char* args);
+         bool HandleBanInfoCharacterCommand(const char* args);
++        bool HandleBanInfoAccountByCharCommand(const char* args);
+         bool HandleBanInfoIPCommand(const char* args);
+         bool HandleBanListAccountCommand(const char* args);
+         bool HandleBanListCharacterCommand(const char* args);
++        bool HandleBanListPlayerAccountCommand(const char* args);
+         bool HandleBanListIPCommand(const char* args);
+ 
+         bool HandleCastCommand(const char *args);
+diff --git a/src/server/game/Chat/Commands/Level3.cpp b/src/server/game/Chat/Commands/Level3.cpp
+index 94a9c59..0749279 100644
+--- a/src/server/game/Chat/Commands/Level3.cpp
++++ b/src/server/game/Chat/Commands/Level3.cpp
+@@ -3143,6 +3143,25 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char *args)
+     return true;
+ }
+ 
++bool ChatHandler::HandleBanInfoAccountByCharCommand(const char *args)
++{
++    Player* target;
++    uint64 target_guid;
++    if (!extractPlayerTarget((char*)args, &target, &target_guid))
++        return false;
++
++    uint32 accountid = target ? target->GetSession()->GetAccountId() : sObjectMgr->GetPlayerAccountIdByGUID(target_guid);
++
++    std::string accountname;
++    if (!sAccountMgr->GetName(accountid,accountname))
++    {
++        PSendSysMessage(LANG_BANINFO_NOCHARACTER);
++        return true;
++    }
++
++    return HandleBanInfoHelper(accountid, accountname.c_str());
++}
++
+ bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
+ {
+     QueryResult result = LoginDatabase.PQuery("SELECT FROM_UNIXTIME(bandate), unbandate-bandate, active, unbandate, banreason, bannedby FROM account_banned WHERE id = '%u' ORDER BY bandate ASC", accountid);
+@@ -3318,6 +3337,26 @@ bool ChatHandler::HandleBanListAccountCommand(const char *args)
+     return HandleBanListHelper(result);
+ }
+ 
++bool ChatHandler::HandleBanListPlayerAccountCommand(const char *args)
++{
++    LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate <= UNIX_TIMESTAMP() AND unbandate<>bandate");
++
++    char* cFilter = strtok((char*)args, " ");
++    if(!cFilter)
++        return false;
++
++    std::string filter = cFilter;
++    LoginDatabase.escape_string(filter);
++    QueryResult result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name "_LIKE_" "_CONCAT3_("'%%'","'%s'","'%%'"),filter.c_str());
++    if (!result)
++    {
++        PSendSysMessage(LANG_BANLIST_NOCHARACTER);
++        return true;
++    }
++
++    return HandleBanListHelper(result);
++}
++
+ bool ChatHandler::HandleBanListHelper(QueryResult result)
+ {
+     PSendSysMessage(LANG_BANLIST_MATCHINGACCOUNT);
+-- 
+1.7.4.msysgit.0
+

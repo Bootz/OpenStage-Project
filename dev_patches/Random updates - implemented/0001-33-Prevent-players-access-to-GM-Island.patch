@@ -1,0 +1,77 @@
+From e8ca236138c93f2307012f4c338633251963de0e Mon Sep 17 00:00:00 2001
+From: Aptiva <Stage6Dev@EMPulseGaming.com>
+Date: Sun, 19 Jun 2011 12:17:08 -0500
+Subject: [PATCH] [33] Prevent players access to GM Island.
+
+---
+ src/server/game/Entities/Player/Player.cpp   |   10 ++++++++++
+ src/server/game/World/World.cpp              |    1 +
+ src/server/game/World/World.h                |    1 +
+ src/server/worldserver/worldserver.conf.dist |    7 +++++++
+ 4 files changed, 19 insertions(+), 0 deletions(-)
+
+diff --git a/src/server/game/Entities/Player/Player.cpp b/src/server/game/Entities/Player/Player.cpp
+index 8ae8d65..e2b4b49 100644
+--- a/src/server/game/Entities/Player/Player.cpp
++++ b/src/server/game/Entities/Player/Player.cpp
+@@ -7377,6 +7377,16 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
+         SendInitWorldStates(newZone, newArea);              // only if really enters to new zone, not just area change, works strange...
+     }
+ 
++     // Prevent players from accessing GM Island
++    if (sWorld->getBoolConfig(CONFIG_PREVENT_PLAYERS_ACCESS_TO_GMISLAND))
++    {
++        if (newZone == 876 && GetSession()->GetSecurity() == SEC_PLAYER)
++        {
++            sLog->outError("Player (GUID: %u) tried to access GM Island.", GetGUIDLow());
++            TeleportTo(13,1.118799,0.477914,-144.708650,3.133046);
++        }
++    }
++ 
+     m_zoneUpdateId    = newZone;
+     m_zoneUpdateTimer = ZONE_UPDATE_INTERVAL;
+ 
+diff --git a/src/server/game/World/World.cpp b/src/server/game/World/World.cpp
+index 97dda09..4b909f7 100644
+--- a/src/server/game/World/World.cpp
++++ b/src/server/game/World/World.cpp
+@@ -587,6 +587,7 @@ void World::LoadConfigSettings(bool reload)
+     m_int_configs[CONFIG_INTERVAL_SAVE] = sConfig->GetIntDefault("PlayerSaveInterval", 15 * MINUTE * IN_MILLISECONDS);
+     m_int_configs[CONFIG_INTERVAL_DISCONNECT_TOLERANCE] = sConfig->GetIntDefault("DisconnectToleranceInterval", 0);
+     m_bool_configs[CONFIG_STATS_SAVE_ONLY_ON_LOGOUT] = sConfig->GetBoolDefault("PlayerSave.Stats.SaveOnlyOnLogout", true);
++    m_bool_configs[CONFIG_PREVENT_PLAYERS_ACCESS_TO_GMISLAND] = sConfig->GetBoolDefault("PreventPlayersAccessToGMIsland", false);
+ 
+     m_int_configs[CONFIG_MIN_LEVEL_STAT_SAVE] = sConfig->GetIntDefault("PlayerSave.Stats.MinLevel", 0);
+     if (m_int_configs[CONFIG_MIN_LEVEL_STAT_SAVE] > MAX_LEVEL)
+diff --git a/src/server/game/World/World.h b/src/server/game/World/World.h
+index 1f3cd3c..9c16af7 100644
+--- a/src/server/game/World/World.h
++++ b/src/server/game/World/World.h
+@@ -155,6 +155,7 @@ enum WorldBoolConfigs
+     CONFIG_CHATLOG_BGROUND,
+     CONFIG_DUNGEON_FINDER_ENABLE,
+     CONFIG_AUTOBROADCAST,
++    CONFIG_PREVENT_PLAYERS_ACCESS_TO_GMISLAND,    
+     CONFIG_ALLOW_TICKETS,
+     CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES,
+     CONFIG_PRESERVE_CUSTOM_CHANNELS,
+diff --git a/src/server/worldserver/worldserver.conf.dist b/src/server/worldserver/worldserver.conf.dist
+index 66ca764..3ccb4bd 100644
+--- a/src/server/worldserver/worldserver.conf.dist
++++ b/src/server/worldserver/worldserver.conf.dist
+@@ -2769,5 +2769,12 @@ LevelReq.Auction = 1
+ 
+ LevelReq.Mail = 1
+ 
++#   PlayersAccessToGMIsland
++#       Prevent access for players to gm island
++#	Default: 0 - Disable
++#		 1 - Enable
++
++PreventPlayersAccessToGMIsland = 0
++
+ #
+ ###################################################################################################
+-- 
+1.7.4.msysgit.0
+
