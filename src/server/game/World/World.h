@@ -309,7 +309,7 @@ enum WorldIntConfigs
     CONFIG_PERSISTENT_CHARACTER_CLEAN_FLAGS,
     CONFIG_MAX_INSTANCES_PER_HOUR,
     CONFIG_UINT32_WARDEN_BAN_TIME,    
-	INT_CONFIG_VALUE_COUNT
+    INT_CONFIG_VALUE_COUNT
 };
 
 /// Server rates
@@ -691,13 +691,13 @@ class World
         bool IsPvPRealm() const { return (getIntConfig(CONFIG_GAME_TYPE) == REALM_TYPE_PVP || getIntConfig(CONFIG_GAME_TYPE) == REALM_TYPE_RPPVP || getIntConfig(CONFIG_GAME_TYPE) == REALM_TYPE_FFA_PVP); }
         bool IsFFAPvPRealm() const { return getIntConfig(CONFIG_GAME_TYPE) == REALM_TYPE_FFA_PVP; }
 
-         void KickAll();
-         void KickAllLess(AccountTypes sec);
-         BanReturn BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author);
+        void KickAll();
+        void KickAllLess(AccountTypes sec);
+        BanReturn BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author);
         BanReturn BanAccount(WorldSession *session, uint32 duration_secs, std::string reason, std::string author);
-         bool RemoveBanAccount(BanMode mode, std::string nameOrIP);
-         BanReturn BanCharacter(std::string name, std::string duration, std::string reason, std::string author);
-         bool RemoveBanCharacter(std::string name);
+        bool RemoveBanAccount(BanMode mode, std::string nameOrIP);
+        BanReturn BanCharacter(std::string name, std::string duration, std::string reason, std::string author);
+        bool RemoveBanCharacter(std::string name);
 
         // for max speed access
         static float GetMaxVisibleDistanceOnContinents()    { return m_MaxVisibleDistanceOnContinents; }
