@@ -3797,7 +3797,7 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
                 if (aura->IsSingleTarget())
                     aura->UnregisterSingleTarget();
 
-                if (newAura = Aura::TryRefreshStackOrCreate(aura->GetSpellProto(), effMask, stealer, NULL, &baseDamage[0], NULL, aura->GetCasterGUID()))
+                if (Aura* newAura = Aura::TryRefreshStackOrCreate(aura->GetSpellProto(), effMask, stealer, NULL, &baseDamage[0], NULL, aura->GetCasterGUID()))
                 {
                     // created aura must not be single target aura,, so stealer won't loose it on recast
                     if (newAura->IsSingleTarget())
@@ -17150,8 +17150,10 @@ bool Unit::SetPosition(float x, float y, float z, float orientation, bool telepo
 
 void Unit::SendThreatListUpdate()
 {
-    if (uint32 count = getThreatManager().getThreatList().size())
+    if (!getThreatManager().isThreatListEmpty())
     {
+        uint32 count = getThreatManager().getThreatList().size();
+
         //sLog->outDebug(LOG_FILTER_UNITS, "WORLD: Send SMSG_THREAT_UPDATE Message");
         WorldPacket data(SMSG_THREAT_UPDATE, 8 + count * 8);
         data.append(GetPackGUID());
@@ -17168,8 +17170,10 @@ void Unit::SendThreatListUpdate()
 
 void Unit::SendChangeCurrentVictimOpcode(HostileReference* pHostileReference)
 {
-    if (uint32 count = getThreatManager().getThreatList().size())
+    if (!getThreatManager().isThreatListEmpty())
     {
+        uint32 count = getThreatManager().getThreatList().size();
+
         sLog->outDebug(LOG_FILTER_UNITS, "WORLD: Send SMSG_HIGHEST_THREAT_UPDATE Message");
         WorldPacket data(SMSG_HIGHEST_THREAT_UPDATE, 8 + 8 + count * 8);
         data.append(GetPackGUID());
