@@ -15,13 +15,12 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
+ 
 #include "Common.h"
 #include "WardenDaemon.h"
+#include "zlib.h"
+#include "ace/Singleton.h"
 #include "ByteBuffer.h"
-
-#include <ace/Singleton.h>
-#include <zlib.h>
 
 // === Warden Daemon internal module management ===
 
@@ -343,7 +342,6 @@ bool Wardend::LoadModuleAndExecute(uint32 accountId, uint32 modLen, uint8 *modul
         sLog->outError("Warden module seams damaged, cannot find signature data.");
         return false;
     }
-
     // Now inflate the module after removing uint32 size at the beginning and last 4 "SIGN"
     uint32 m_InflateSize = *(uint32*)module;
     uint8* moduleCode = (uint8*)malloc(m_InflateSize);

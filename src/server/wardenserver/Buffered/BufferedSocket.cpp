@@ -16,11 +16,15 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** \file
+  \ingroup wardend
+  */
+
+#include "BufferedSocket.h"
+
 #include <ace/OS_NS_string.h>
 #include <ace/INET_Addr.h>
 #include <ace/SString.h>
-
-#include "BufferedSocket.h"
 
 #ifndef MSG_NOSIGNAL
 #define MSG_NOSIGNAL 0
@@ -36,9 +40,9 @@ BufferedSocket::BufferedSocket(void):
 {
 }
 
-int BufferedSocket::open(void * arg)
+/*virtual*/ int BufferedSocket::open(void * arg)
 {
-    if (Base::open(arg) == -1)
+    if(Base::open(arg) == -1)
         return -1;
 
     ACE_Time_Value interval(TIMEOUT_SECS);
@@ -46,7 +50,7 @@ int BufferedSocket::open(void * arg)
 
     ACE_INET_Addr addr;
 
-    if (peer().get_remote_addr(addr) == -1)
+    if(peer().get_remote_addr(addr) == -1)
         return -1;
 
     char address[1024];
@@ -221,7 +225,7 @@ bool BufferedSocket::send(const char *buf, size_t len)
 
 /*virtual*/ int BufferedSocket::handle_input(ACE_HANDLE /*= ACE_INVALID_HANDLE*/)
 {
-   const ssize_t space = this->input_buffer_.space();
+    const ssize_t space = this->input_buffer_.space();
 
     ssize_t n = this->peer().recv(this->input_buffer_.wr_ptr(), space);
 
@@ -233,8 +237,8 @@ bool BufferedSocket::send(const char *buf, size_t len)
     else if(n == 0)
     {
         // EOF
-       return -1;
-   }
+        return -1;
+    }
 
     this->input_buffer_.wr_ptr((size_t)n);
 

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,7 +22,8 @@
 #include "Common.h"
 #include "SharedDefines.h"
 #include "Define.h"
-#include "WardenProtocol.h"
+#include "ace/Singleton.h"
+#include "WardendProtocol.h"
 #include "WorldSession.h"
 #include "Util.h"
 #include "BigNumber.h"
@@ -34,18 +35,17 @@
 #include <ace/Svc_Handler.h>
 #include <ace/Dev_Poll_Reactor.h>
 #include <ace/Reactor.h>
-#include <ace/Singleton.h>
 
 #include <openssl/sha.h>
 
 // Definition of ratio of check types (based on a long session of 1162 checks)
 // They are cumulative, meaning that I add the %age to the previous one
-#define WCHECK_PAGE1_RATIO  15.0f   // 15.0%
-#define WCHECK_PAGE2_RATIO  30.0f   // 15.0%
-#define WCHECK_MEMORY_RATIO 94.0f   // 64.0%
-#define WCHECK_DRIVER_RATIO 97.4f   // 03.4%
-#define WCHECK_FILE_RATIO   98.7f   // 01.3%
-#define WCHECK_LUA_RATIO   100.0f   // 01.3%
+#define WCHECK_PAGE1_RATIO  25.0f   // 36.5
+#define WCHECK_PAGE2_RATIO  50.0f   // 36.5
+#define WCHECK_MEMORY_RATIO 94.0f   // 21.0
+#define WCHECK_DRIVER_RATIO 97.4f   // 03.4
+#define WCHECK_FILE_RATIO   98.7f   // 01.3
+#define WCHECK_LUA_RATIO   100.0f   // 01.3
 
 // State machine for warden activity on one session
 enum eWardenClientState
@@ -59,8 +59,6 @@ enum eWardenClientState
     WARD_STATE_USER_DISABLED,
     WARD_STATE_PENDING_WARDEND,
     WARD_STATE_NEED_WARDEND,
-    WARD_STATE_FORCE_CHEAT_CHECK_IN,
-    WARD_STATE_FORCE_CHEAT_CHECK_OUT,
 };
 
 class WardenSvcHandler: public ACE_Svc_Handler <ACE_SOCK_STREAM, ACE_NULL_SYNCH>
@@ -73,6 +71,7 @@ class WardenSvcHandler: public ACE_Svc_Handler <ACE_SOCK_STREAM, ACE_NULL_SYNCH>
         }WardenHandler;
 
         // Deamon replies related
+        bool _HandleDisconnect();
         bool _HandlePong();
         bool _HandleNewKeys();
 
@@ -91,13 +90,12 @@ class WardenMgr
     public:
         WardenMgr();
         ~WardenMgr();
-        friend class ACE_Singleton<WardenMgr, ACE_Null_Mutex>;
         void Initialize(const char* addr, u_short port, bool IsBanning);
         void SetDisabled() { m_Enabled = false; }
         bool IsEnabled() { return m_Enabled; }
 
         // Update
-        void Update(uint32 diff); // Global Warden System update for packets send/receive
+        void Update(uint32 diff);                               // Global Warden System update for packets send/receive
         void Update(WorldSession* const session);               // Session specific update
 
         // Connection Management
@@ -105,6 +103,7 @@ class WardenMgr
         void SendPing();
     public:
         void Pong();
+        void SetDisconnected();
     private:
         // Structure to store checks
         struct MemoryCheckEntry
@@ -174,7 +173,6 @@ class WardenMgr
         void RandAModuleMd5(std::string *result);
     public:
         void Register(WorldSession* const session);
-        void ForceCheckForSession(WorldSession* const session);
     private:
         void StartForSession(WorldSession* const session);
         void SetInitialKeys(const uint8 *bSessionKey1, const uint8 *bSessionKey2, uint8* ClientKey, uint8 *ServerKey);
@@ -191,7 +189,6 @@ class WardenMgr
         void SendWardenData(WorldSession* const session);
     private:
         void SendCheatCheck(WorldSession* const session);
-        void SendForceWEHCheatCheck(WorldSession* const session);
     public:
         bool ValidateCheatCheckResult(WorldSession* const session, WorldPacket& clientPacket);
         void Unregister(WorldSession* const session);
@@ -206,29 +203,28 @@ class WardenMgr
         uint32 BuildChecksum(const uint8* data, uint32 dataLen);
 
     protected:
-        ACE_SOCK_Stream *m_WardenProcessStream;
-        ACE_SOCK_Connector *m_WardenProcessConnection;
+        ACE_SOCK_Stream         *m_WardenProcessStream;
+        ACE_SOCK_Connector      *m_WardenProcessConnection;
 
-        bool m_HalfCall;
-        bool m_Enabled;
-        bool m_PingOut;
-        bool m_Disconnected;
-        bool m_Banning;
-        std::string m_WardendAddress;
-        u_short m_WardendPort;
-        WardendConnector m_connector;
-        IntervalTimer m_PingTimer;
+        bool                    m_HalfCall;
+        bool                    m_Enabled;
+        bool                    m_PingOut;
+        bool                    m_Disconnected;
+        bool                    m_Banning;
+        std::string             m_WardendAddress;
+        u_short                 m_WardendPort;
+        WardendConnector        m_Connector;
+        IntervalTimer      m_PingTimer;
 
-        WardenModuleMap m_WardenModuleMap;
+        WardenModuleMap         m_WardenModuleMap;
 
-        WardenMemoryChecks m_WardenMemoryChecks;
-        WardenPageChecks m_WardenPageChecks;
-        WardenFileChecks m_WardenFileChecks;
-        WardenLuaChecks m_WardenLuaChecks;
-        WardenDriverChecks m_WardenDriverChecks;
+        WardenMemoryChecks      m_WardenMemoryChecks;
+        WardenPageChecks        m_WardenPageChecks;
+        WardenFileChecks        m_WardenFileChecks;
+        WardenLuaChecks         m_WardenLuaChecks;
+        WardenDriverChecks      m_WardenDriverChecks;
         //WardenModuleChecks    m_WardenModuleChecks;
 };
 
 #define sWardenMgr ACE_Singleton<WardenMgr, ACE_Null_Mutex>::instance()
-
 #endif

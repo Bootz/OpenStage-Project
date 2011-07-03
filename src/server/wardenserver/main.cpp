@@ -16,6 +16,10 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// \addtogroup Wardend Trinity Daemon
+/// @{
+/// \file
+ 
 #include "Common.h"
 #include "WardenDaemon.h"
 
@@ -26,6 +30,8 @@
 #include "revision.h"
 #include "Util.h"
 #include "LoginDatabase.h"
+#include "Database/DatabaseEnv.h"
+#include "Database/DatabaseWorkerPool.h"
 
 #include <ace/Get_Opt.h>
 #include <ace/Dev_Poll_Reactor.h>
@@ -39,7 +45,8 @@
 #endif //_WARDEND_CONFIG
 
 bool stopEvent = false;                                     // Setting it to true stops the server
-LoginDatabaseWorkerPool LoginDatabase;                      // Need for Make Linker Happy!
+
+LoginDatabaseWorkerPool LoginDatabase;                      ///< Accessor to the realm/login database
 
 /// Print out the usage string for this program on the console.
 void usage(const char *prog)
@@ -82,8 +89,8 @@ extern int main(int argc, char **argv)
     sLog->outString("%s (warden-daemon)", _FULLVERSION);
     sLog->outString("<Ctrl-C> to stop.\n");
     sLog->outString("Using configuration file %s.", cfg_file);
-
-    sLog->outDetail("Using ACE: %s", ACE_VERSION);
+    
+	sLog->outDetail("Using ACE: %s", ACE_VERSION);
 
     ACE_Reactor::instance(new ACE_Reactor(new ACE_TP_Reactor(), true), true);
 
@@ -170,3 +177,45 @@ extern int main(int argc, char **argv)
     sLog->outString("Halting process...");
     return 0;
 }
+
+// Initialize connection to the database
+/*bool StartDB()
+{
+    MySQL::Library_Init();
+
+    std::string dbstring = sConfig->GetStringDefault("LoginDatabaseInfo", "");
+    if (dbstring.empty())
+    {
+        sLog->outError("Database not specified");
+        return false;
+    }
+
+    uint8 worker_threads = sConfig->GetIntDefault("LoginDatabase.WorkerThreads", 1);
+    if (worker_threads < 1 || worker_threads > 32)
+    {
+        sLog->outError("Improper value specified for LoginDatabase.WorkerThreads, defaulting to 1.");
+        worker_threads = 1;
+    }
+
+    uint8 synch_threads = sConfig->GetIntDefault("LoginDatabase.SynchThreads", 1);
+    if (synch_threads < 1 || synch_threads > 32)
+    {
+        sLog->outError("Improper value specified for LoginDatabase.SynchThreads, defaulting to 1.");
+        synch_threads = 1;
+    }
+
+    // NOTE: While authserver is singlethreaded you should keep synch_threads == 1. Increasing it is just silly since only 1 will be used ever.
+    if (!LoginDatabase.Open(dbstring.c_str(), worker_threads, synch_threads))
+    {
+        sLog->outError("Cannot connect to database");
+        return false;
+    }
+
+    return true;
+}
+
+void StopDB()
+{
+    LoginDatabase.Close();
+    MySQL::Library_End();
+}*/

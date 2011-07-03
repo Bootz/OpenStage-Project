@@ -16,9 +16,14 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BUFFEREDSOCKET_H__
-#define __BUFFEREDSOCKET_H__
+/** \file
+  \ingroup wardend
+  */
 
+#ifndef _BUFFEREDSOCKET_H_
+#define _BUFFEREDSOCKET_H_
+
+#include <ace/Basic_Types.h>
 #include <ace/Synch_Traits.h>
 #include <ace/Svc_Handler.h>
 #include <ace/SOCK_Stream.h>
@@ -29,7 +34,7 @@
 
 #define TIMEOUT_SECS 15
 
-class BufferedSocket : public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH>
+class BufferedSocket: public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH>
 {
     protected:
         typedef ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH> Base;
@@ -74,4 +79,4 @@ class BufferedSocket : public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH>
 
 };
 
-#endif /* __BUFFEREDSOCKET_H__ */
+#endif /* _BUFFEREDSOCKET_H_ */

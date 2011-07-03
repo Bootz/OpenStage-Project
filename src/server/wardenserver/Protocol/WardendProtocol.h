@@ -34,6 +34,7 @@ enum eWardendOpcode
     //  uint8   serverKey[258];
     //  uint8   clientKey[258];
     //  uint8   seed[16];
+    WMSG_CONNECTION_END             = 0x71,
 };
 
 enum eWardenServerCmd
@@ -69,5 +70,5 @@ enum eWardenCheckType
     WARD_CHECK_END                  = 9
 };
 
-#define WARDEND_SIGN "GuardM"
+#define WARDEND_SIGN "TrinityCore "
 #endif

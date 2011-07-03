@@ -20,7 +20,7 @@
 #define __WARDEND_H
 
 #include "Common.h"
-#include "WardenProtocol.h"
+#include "WardendProtocol.h"
 
 #define WARDEN_MAX_MODULES  20
 

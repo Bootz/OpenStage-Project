@@ -17,11 +17,11 @@
  */
 
 #include "Common.h"
-#include "Configuration/Config.h"
+#include "Config.h"
 #include "ByteBuffer.h"
 #include "Log.h"
 #include "WardenSocket.h"
-#include "WardenProtocol.h"
+#include "WardendProtocol.h"
 
 #include <ace/OS_NS_unistd.h>
 #include <ace/OS_NS_fcntl.h>
@@ -123,7 +123,7 @@ void WardenSocket::OnRead()
 bool WardenSocket::_HandleLoadModule()
 {
     sLog->outStaticDebug("WardenSocket::_HandleLoadModule, received %u", (uint32)recv_len());
-    int8 testArray[5];
+    uint8 testArray[5];
     uint32 accountId;
     uint32 moduleLen;
     uint8 *module;
