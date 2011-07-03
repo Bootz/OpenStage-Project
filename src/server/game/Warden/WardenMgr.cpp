@@ -134,15 +134,15 @@ void WardenMgr::Update(WorldSession* const session)
                 return;
             case WARD_STATE_LOAD_MODULE:                // no reply to load module request (20 secs)
             case WARD_STATE_LOAD_FAILED:                // no reply after we sent the module to client (20 secs)
-                sLog->outBasic("Warden Manager: no reply received for module load or 2 times load failed, kicking account %u", session->GetAccountId());
+                sLog->outError("Warden Manager: no reply received for module load or 2 times load failed, kicking account %u", session->GetAccountId());
                 session->KickPlayer();
                 return;
             case WARD_STATE_TRANSFORM_SEED:             // no reply to transformed seed (20 secs)
-                sLog->outBasic("Warden Manager: no transformed seed received, kicking account %u", session->GetAccountId());
+                sLog->outError("Warden Manager: no transformed seed received, kicking account %u", session->GetAccountId());
                 session->KickPlayer();
                 return;
             case WARD_STATE_CHEAT_CHECK_OUT:            // timeout waiting for a cheat check reply
-                sLog->outBasic("Warden Manager: no Cheat-check reply received, kicking account %u", session->GetAccountId());
+                sLog->outError("Warden Manager: no Cheat-check reply received, kicking account %u", session->GetAccountId());
                 session->KickPlayer();
                 return;
             case WARD_STATE_CHEAT_CHECK_IN:             // send cheat check
@@ -945,7 +945,7 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
     clientPacket >> checksum;
     if (checksum != BuildChecksum(clientPacket.contents() + clientPacket.rpos(), clientPacket.size() - clientPacket.rpos()))
     {
-        sLog->outBasic("Warden Cheat-check: Kicking account %u for failed check, Packet Checksum 0x%08X is invalid!", session->GetAccountId(), checksum);
+        sLog->outError("Warden Cheat-check: Kicking account %u for failed check, Packet Checksum 0x%08X is invalid!", session->GetAccountId(), checksum);
         ReactToCheatCheckResult(session, false);
         return false;
     }
@@ -992,7 +992,7 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
                 if (res)
                 {
                     localCheck = false;
-                    sLog->outBasic("Kicking account %u for failed check, MEM at Offset 0x%04X, lentgh %u could not be read by client", accountId, (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length);
+                    sLog->outError("Kicking account %u for failed check, MEM at Offset 0x%04X, lentgh %u could not be read by client", accountId, (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length);
                 }
                 else
                 {
@@ -1005,7 +1005,7 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
                         std::string strContent, strContent2;
                         hexEncodeByteArray(memContent, (*checkList)[i].mem->Length, strContent);
                         hexEncodeByteArray((*checkList)[i].mem->Result, (*checkList)[i].mem->Length, strContent2);
-                        sLog->outBasic("Kicking account %u for failed check, MEM Offset 0x%04X length %u has content '%s' instead of '%s'",
+                        sLog->outError("Kicking account %u for failed check, MEM Offset 0x%04X length %u has content '%s' instead of '%s'",
                             accountId, (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length, strContent.c_str(), strContent2.c_str());
                     }
                     pktLen = pktLen - (1 + (*checkList)[i].mem->Length);
@@ -1022,7 +1022,7 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
                 if (res)
                 {
                     localCheck = false;
-                    sLog->outBasic("Kicking account %u for failed check, MPQ '%s' not found by client", accountId, (*checkList)[i].file->String.c_str());
+                    sLog->outError("Kicking account %u for failed check, MPQ '%s' not found by client", accountId, (*checkList)[i].file->String.c_str());
                     pktLen = pktLen - 1;
                 }
                 else
@@ -1035,7 +1035,7 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
                         std::string strResSHA1, strReqSHA1;
                         hexEncodeByteArray(resSHA1, 20, strResSHA1);
                         hexEncodeByteArray((*checkList)[i].file->SHA, 20, strReqSHA1);
-                        sLog->outBasic("Kicking account %u for failed check, MPQ '%s' SHA1 is '%s' instead of '%s'", accountId, (*checkList)[i].file->String.c_str(), strResSHA1.c_str(), strReqSHA1.c_str());
+                        sLog->outError("Kicking account %u for failed check, MPQ '%s' SHA1 is '%s' instead of '%s'", accountId, (*checkList)[i].file->String.c_str(), strResSHA1.c_str(), strReqSHA1.c_str());
                     }
                     pktLen = pktLen - 21;
                 }
@@ -1058,7 +1058,7 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
                         clientPacket >> luaStr[pos];
                     }
                     luaStr[foundLuaLen] = 0;
-                    sLog->outBasic("Kicking account %u for failed check, Lua '%s' found as '%s'", accountId, (*checkList)[i].lua->String.c_str(), (char*)luaStr);
+                    sLog->outError("Kicking account %u for failed check, Lua '%s' found as '%s'", accountId, (*checkList)[i].lua->String.c_str(), (char*)luaStr);
                     localCheck = false;
                     free(luaStr);
                 }
@@ -1076,9 +1076,9 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
                 if (res != 0xE9)
                 {
                     if ((*checkList)[i].check == WARD_CHECK_DRIVER)
-                        sLog->outBasic("Kicking account %u for failed driver check '%s'", accountId ,(*checkList)[i].driver->String.c_str());
+                        sLog->outError("Kicking account %u for failed driver check '%s'", accountId ,(*checkList)[i].driver->String.c_str());
                     else
-                        sLog->outBasic("Kicking account %u for failed page check Offset 0x%08X, length %u", accountId, (*checkList)[i].page->Offset, (*checkList)[i].page->Length);
+                        sLog->outError("Kicking account %u for failed page check Offset 0x%08X, length %u", accountId, (*checkList)[i].page->Offset, (*checkList)[i].page->Length);
                     localCheck = false;
                 }
                 sLog->outStaticDebug("Page or Driver %s",localCheck?"Ok":"Failed");
